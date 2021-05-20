@@ -13,7 +13,7 @@ private:
     int createTable(string SQL);
     int createIndex(string SQL);
 public:
-    API *api;
+    API api;
     int interpret(string SQL);
 };
 

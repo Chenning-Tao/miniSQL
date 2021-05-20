@@ -4,12 +4,15 @@
 
 #ifndef MINISQL_CATALOGMANAGER_H
 #define MINISQL_CATALOGMANAGER_H
-#include "API.h"
-
+#include "../CommonHead.h"
+#include "BufferManager.h"
+#include "Table.h"
+using namespace std;
 
 class CatalogManager {
 public:
     bool createTable(string tableName, Attribute tableAttribute);
+    BufferManager *BM;
 private:
 };
 

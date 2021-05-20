@@ -3,4 +3,4 @@ project(miniSQL)
 
 set(CMAKE_CXX_STANDARD 17)
 
-add_executable(miniSQL main.cpp Interpreter.cpp Interpreter.h CommonHead.h API.cpp API.h CatalogManager.cpp CatalogManager.h BufferManager.cpp BufferManager.h)
+add_executable(miniSQL main.cpp Interpreter.cpp Interpreter.h CommonHead.h API.cpp API.h Utility/CatalogManager.cpp Utility/CatalogManager.h Utility/BufferManager.cpp Utility/BufferManager.h Utility/Table.cpp Utility/Table.h)

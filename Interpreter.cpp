@@ -78,7 +78,7 @@ int Interpreter::createTable(string SQL) {
         }
     }
 
-    api->createTable(tableName, newTable);
+    api.createTable(tableName, newTable);
     return 1;
 }
 
