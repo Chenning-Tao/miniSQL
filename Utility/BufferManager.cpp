@@ -20,7 +20,27 @@ int BufferManager::blockNum(const std::string& fileName) {
 }
 
 pageInfo BufferManager::fetchPage(std::string fileName, int blockID) {
+    // 初始化 如果返回是content为nullptr表示失败
+    pageInfo newPage;
+    newPage.usedSize = -1;
+    newPage.content = nullptr;
+
     std::string filePath = DatabasePath + fileName;
+    FILE *f = fopen(filePath.c_str(), "r");
+    if(f == nullptr)
+        return newPage;
+    // 读入page
+    fseek(f, blockID * PAGE_SIZE, SEEK_SET);
+    fread(newPage.content, PAGE_SIZE, 1, f);
+
+    FILE *current = f;
+    fseek(f, 0, SEEK_END);
+    int disToEnd = int(f - current);
+    if(disToEnd > PAGE_SIZE)
+        newPage.usedSize = PAGE_SIZE;
+    else
+        newPage.usedSize = disToEnd;
+    return newPage;
 }
 
 Page::Page() {
