@@ -12,7 +12,7 @@ using namespace std;
 class CatalogManager {
 public:
     bool createTable(string tableName, Attribute tableAttribute);
-    BufferManager *BM;
+    BufferManager BM;
 private:
 };
 

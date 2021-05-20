@@ -5,5 +5,6 @@
 #include "CatalogManager.h"
 
 bool CatalogManager::createTable(string tableName, Attribute tableAttribute) {
-    cout << BM->blockNum(tableName);
+    pageInfo newPage = BM.fetchPage("Catalog", BM.blockNum(tableName));
+    cout << newPage.usedSize;
 }
