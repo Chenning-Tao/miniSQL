@@ -19,6 +19,10 @@ int BufferManager::blockNum(const std::string& fileName) {
     }
 }
 
+pageInfo BufferManager::fetchPage(std::string fileName, int blockID) {
+    std::string filePath = DatabasePath + fileName;
+}
+
 Page::Page() {
     valid = false;
     dirty = false;
@@ -50,3 +54,4 @@ bool Page::isDirty() {
 bool Page::isValid() {
     return valid;
 }
+

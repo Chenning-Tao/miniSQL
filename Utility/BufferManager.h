@@ -28,7 +28,7 @@ class BufferManager {
 public:
     BufferManager();
     ~BufferManager();
-    bool fetchPage();
+    pageInfo fetchPage(std:string fileName, int blockID);
     static int blockNum(const std::string& fileName);
 private:
     Page *bufferPool;
