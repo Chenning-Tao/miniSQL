@@ -13,10 +13,11 @@ class Page{
 public:
     Page();
     bool pageWrite();
-    bool isDirty();
-    bool isValid();
+    bool isDirty() const;
+    bool isFree() const;
+    pageInfo initialize(std::string newName, int newBlockID);
 private:
-    bool valid;
+    bool free;
     bool dirty;
     char content[PAGE_SIZE];
     int blockID;
@@ -29,9 +30,11 @@ public:
     BufferManager();
 //    ~BufferManager();
     pageInfo fetchPage(std::string fileName, int blockID);
+    int freePage();
     static int blockNum(const std::string& fileName);
 private:
     Page *bufferPool;
+    std::vector<Page*> dirtyPage;
 };
 
 

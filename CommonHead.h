@@ -12,6 +12,7 @@
 #include "regex"
 #include <cstdio>
 #include <unordered_map>
+#include <vector>
 
 typedef struct pageInfo{
     char *content;

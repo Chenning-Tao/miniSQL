@@ -4,6 +4,8 @@
 
 #include "BufferManager.h"
 
+#include <utility>
+
 BufferManager::BufferManager() {
     this->bufferPool = new Page[POOL_SIZE];
 }
@@ -20,31 +22,43 @@ int BufferManager::blockNum(const std::string& fileName) {
 }
 
 pageInfo BufferManager::fetchPage(std::string fileName, int blockID) {
-    // 初始化 如果返回是content为nullptr表示失败
     pageInfo newPage;
-    newPage.usedSize = -1;
-    newPage.content = nullptr;
 
     std::string filePath = DatabasePath + fileName;
     FILE *f = fopen(filePath.c_str(), "r");
-    if(f == nullptr)
-        return newPage;
+    // 如果没有，创建新的page
+    if(f == nullptr){
+        // 获得一个空闲的块
+        int freePageID = freePage();
+        newPage = bufferPool[freePageID].initialize(fileName, blockID);
+    }
     // 读入page
-    fseek(f, blockID * PAGE_SIZE, SEEK_SET);
-    fread(newPage.content, PAGE_SIZE, 1, f);
+    else {
+        fseek(f, blockID * PAGE_SIZE, SEEK_SET);
+        fread(newPage.content, PAGE_SIZE, 1, f);
 
-    FILE *current = f;
-    fseek(f, 0, SEEK_END);
-    int disToEnd = int(f - current);
-    if(disToEnd > PAGE_SIZE)
-        newPage.usedSize = PAGE_SIZE;
-    else
-        newPage.usedSize = disToEnd;
+        FILE *current = f;
+        fseek(f, 0, SEEK_END);
+        int disToEnd = int(f - current);
+        if (disToEnd > PAGE_SIZE)
+            newPage.usedSize = PAGE_SIZE;
+        else
+            newPage.usedSize = disToEnd;
+    }
     return newPage;
 }
 
+int BufferManager::freePage() {
+    // 如果有free page，返回bufferPoolID，没有返回-1
+    for(int i = 0; i < POOL_SIZE; ++i){
+        if(bufferPool[i].isFree())
+            return i;
+    }
+    return -1;
+}
+
 Page::Page() {
-    valid = false;
+    free = true;
     dirty = false;
     blockID = -1;
     memset(content, '\0', PAGE_SIZE);
@@ -52,7 +66,7 @@ Page::Page() {
 }
 
 bool Page::pageWrite() {
-    if(dirty && valid){
+    if(dirty && !free){
         std::string filePath = DatabasePath + name;
         FILE* f = fopen(filePath.c_str(), "w+");
         // 如果无法写入
@@ -67,11 +81,22 @@ bool Page::pageWrite() {
     else return true;
 }
 
-bool Page::isDirty() {
+bool Page::isDirty() const {
     return dirty;
 }
 
-bool Page::isValid() {
-    return valid;
+bool Page::isFree() const {
+    return free;
+}
+
+pageInfo Page::initialize(std::string newName, int newBlockID) {
+    name = std::move(newName);
+    blockID = newBlockID;
+    free = false;
+    pageInfo newPage;
+    newPage.content = content;
+    newPage.usedSize = 0;
+    // 没啥用
+    return newPage;
 }
 
