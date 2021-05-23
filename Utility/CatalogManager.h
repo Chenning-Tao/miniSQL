@@ -11,9 +11,11 @@ using namespace std;
 
 class CatalogManager {
 public:
+    CatalogManager();
     bool createTable(string tableName, Attribute tableAttribute);
     BufferManager BM;
 private:
+    vector<int> freePointer;
 };
 
 

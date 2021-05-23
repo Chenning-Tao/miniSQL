@@ -53,3 +53,7 @@ bool Attribute::setPrimary(const string& inName) {
     if(!find) cout << "Cannot find this key in this table!" << endl;
     return find;
 }
+
+short Attribute::attributeNum() const {
+    return short(count+1);
+}

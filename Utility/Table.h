@@ -7,6 +7,8 @@
 #include "../CommonHead.h"
 
 // 用来存储table信息
+// 存储一个table所需的最大空间：2 + 64*32 + 32*2 + 2 + 32 + 32
+// 每列名字最长64字节
 class Attribute
 {
 private:
@@ -22,6 +24,7 @@ public:
     void setChar(std::string inName, short length, bool Unique);
     void setFloat(std::string inName, bool Unique);
     bool setPrimary(const std::string& inName);
+    short attributeNum() const;
 };
 
 
