@@ -3,7 +3,6 @@
 //
 
 #include "BufferManager.h"
-
 #include <utility>
 
 BufferManager::BufferManager() {
@@ -24,26 +23,35 @@ int BufferManager::blockNum(const std::string& fileName) {
 pageInfo BufferManager::fetchPage(std::string fileName, int blockID) {
     pageInfo newPage;
 
-    std::string filePath = DatabasePath + fileName;
-    FILE *f = fopen(filePath.c_str(), "r");
-    // 如果没有，创建新的page
-    if(f == nullptr){
+    // 首先查看bufferPool中是否存在
+    std::string indexFind = fileName + std::to_string(blockID);
+    auto getID = index.find(indexFind);
+    // 如果没有找到
+    if(getID == index.end()){
+        std::string filePath = DatabasePath + fileName;
+        FILE *f = fopen(filePath.c_str(), "r");
+        // 如果没有，创建新的page
         // 获得一个空闲的块
         int freePageID = freePage();
         newPage = bufferPool[freePageID].initialize(fileName, blockID);
-    }
-    // 读入page
-    else {
-        fseek(f, blockID * PAGE_SIZE, SEEK_SET);
-        fread(newPage.content, PAGE_SIZE, 1, f);
-
-        FILE *current = f;
-        fseek(f, 0, SEEK_END);
-        int disToEnd = int(f - current);
-        if (disToEnd > PAGE_SIZE)
-            newPage.usedSize = PAGE_SIZE;
-        else
-            newPage.usedSize = disToEnd;
+        bufferPool[freePageID].pinPage();
+        // 读入page
+        if(f != nullptr){
+            fseek(f, blockID * PAGE_SIZE, SEEK_SET);
+            fread(newPage.content, PAGE_SIZE, 1, f);
+            FILE *current = f;
+            fseek(f, 0, SEEK_END);
+            int disToEnd = int(f - current);
+            if (disToEnd > PAGE_SIZE)
+                newPage.usedSize = PAGE_SIZE;
+            else
+                newPage.usedSize = disToEnd;
+            bufferPool[freePageID].contentInit(newPage);
+        }
+    // 如果找到了
+    } else{
+       newPage = bufferPool[getID->second].getPageInfo();
+       bufferPool[getID->second].pinPage();
     }
     return newPage;
 }
@@ -57,12 +65,15 @@ int BufferManager::freePage() {
     return -1;
 }
 
+
 Page::Page() {
     free = true;
     dirty = false;
     blockID = -1;
+    content = new char[PAGE_SIZE];
     memset(content, '\0', PAGE_SIZE);
     usedSize = 0;
+    pin = false;
 }
 
 bool Page::pageWrite() {
@@ -99,4 +110,29 @@ pageInfo Page::initialize(std::string newName, int newBlockID) {
     // 没啥用
     return newPage;
 }
+
+void Page::makeDirty() {
+    dirty = true;
+}
+
+pageInfo Page::getPageInfo() {
+    pageInfo temp;
+    temp.content = content;
+    temp.usedSize = usedSize;
+    return temp;
+}
+
+void Page::pinPage() {
+    pin = true;
+}
+
+void Page::unPinPage() {
+    pin = false;
+}
+
+void Page::contentInit(pageInfo in) {
+    content = in.content;
+    usedSize = in.usedSize;
+}
+
 

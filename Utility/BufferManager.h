@@ -15,13 +15,19 @@ public:
     bool pageWrite();
     bool isDirty() const;
     bool isFree() const;
+    void makeDirty();
+    void pinPage();
+    void unPinPage();
+    pageInfo getPageInfo();
     pageInfo initialize(std::string newName, int newBlockID);
+    void contentInit(pageInfo in);
 private:
     bool free;
     bool dirty;
-    char content[PAGE_SIZE];
+    char *content;
     int blockID;
     int usedSize;
+    bool pin;
     std::string name;
 };
 
@@ -35,7 +41,13 @@ public:
 private:
     Page *bufferPool;
     std::vector<Page*> dirtyPage;
+    std::unordered_map<std::string, int> index;
 };
 
+template<typename T> inline void otherToChar(T raw, char *&cur){
+    int size = sizeof(raw);
+    memcpy(cur, &raw, size);
+    cur += size;
+}
 
 #endif //MINISQL_BUFFERMANAGER_H
