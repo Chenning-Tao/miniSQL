@@ -11,10 +11,12 @@ using namespace std;
 
 class CatalogManager {
 public:
-    CatalogManager();
+    CatalogManager(BufferManager *BM);
+    ~CatalogManager();
     bool createTable(string tableName, Attribute tableAttribute);
-    BufferManager BM;
+    BufferManager *BM{};
 private:
+    vector<int> tablePointer;
     vector<int> freePointer;
 };
 
