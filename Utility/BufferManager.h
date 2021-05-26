@@ -51,4 +51,10 @@ template<typename T> inline void otherToChar(T raw, char *&cur){
     cur += size;
 }
 
+template<typename T> inline void charToOther(char *&cur, T &des){
+    int size = sizeof(des);
+    memcpy(&des, cur, size);
+    cur += size;
+}
+
 #endif //MINISQL_BUFFERMANAGER_H

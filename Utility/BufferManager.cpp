@@ -20,7 +20,7 @@ int BufferManager::blockNum(const std::string& fileName) {
         fseek(f, 0, SEEK_END);
         long length = ftell(f);
         fclose(f);
-        return (length/PAGE_SIZE);
+        return int(length/PAGE_SIZE);
     }
 
 }
@@ -98,7 +98,6 @@ Page::Page() {
 
 bool Page::pageWrite() {
     if(dirty && !free){
-        std::cout << content[0];
         std::string filePath = DatabasePath + name;
         FILE* f = fopen(filePath.c_str(), "rb+");
         // 如果无法写入
