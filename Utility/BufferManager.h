@@ -34,13 +34,14 @@ private:
 class BufferManager {
 public:
     BufferManager();
-//    ~BufferManager();
+    ~BufferManager();
     pageInfo fetchPage(std::string fileName, int blockID);
     int freePage();
     static int blockNum(const std::string& fileName);
+    void changeComplete(const std::string& fileName, int blockID);
 private:
     Page *bufferPool;
-    std::vector<Page*> dirtyPage;
+    std::vector<int> dirtyPage;
     std::unordered_map<std::string, int> index;
 };
 

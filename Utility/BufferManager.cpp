@@ -11,25 +11,29 @@ BufferManager::BufferManager() {
 
 int BufferManager::blockNum(const std::string& fileName) {
     std::string filePath = DatabasePath + fileName;
-    FILE *f = fopen(filePath.c_str(), "r");
-    if(f == nullptr) return 0;
-    else{
-        FILE *start = f;
-        fseek(f, 0, SEEK_END);
-        return (f - start);
+    FILE *f = fopen(filePath.c_str(), "rb");
+    if(f == nullptr){
+        fclose(f);
+        return 0;
     }
+    else{
+        fseek(f, 0, SEEK_END);
+        long length = ftell(f);
+        fclose(f);
+        return (length/PAGE_SIZE);
+    }
+
 }
 
 pageInfo BufferManager::fetchPage(std::string fileName, int blockID) {
     pageInfo newPage;
-
     // 首先查看bufferPool中是否存在
     std::string indexFind = fileName + std::to_string(blockID);
     auto getID = index.find(indexFind);
     // 如果没有找到
     if(getID == index.end()){
         std::string filePath = DatabasePath + fileName;
-        FILE *f = fopen(filePath.c_str(), "r");
+        FILE *f = fopen(filePath.c_str(), "rb+");
         // 如果没有，创建新的page
         // 获得一个空闲的块
         int freePageID = freePage();
@@ -48,6 +52,8 @@ pageInfo BufferManager::fetchPage(std::string fileName, int blockID) {
                 newPage.usedSize = disToEnd;
             bufferPool[freePageID].contentInit(newPage);
         }
+        // 创建索引
+        index.emplace(indexFind, freePageID);
     // 如果找到了
     } else{
        newPage = bufferPool[getID->second].getPageInfo();
@@ -65,6 +71,20 @@ int BufferManager::freePage() {
     return -1;
 }
 
+void BufferManager::changeComplete(const std::string& fileName, int blockID) {
+    std::string indexFind = fileName + std::to_string(blockID);
+    auto bufferID = index.find(indexFind);
+    bufferPool[bufferID->second].makeDirty();
+    bufferPool[bufferID->second].unPinPage();
+    dirtyPage.push_back(bufferID->second);
+}
+
+BufferManager::~BufferManager() {
+    for(int cur : dirtyPage){
+        bufferPool[cur].pageWrite();
+    }
+}
+
 
 Page::Page() {
     free = true;
@@ -78,12 +98,13 @@ Page::Page() {
 
 bool Page::pageWrite() {
     if(dirty && !free){
+        std::cout << content[0];
         std::string filePath = DatabasePath + name;
-        FILE* f = fopen(filePath.c_str(), "w+");
+        FILE* f = fopen(filePath.c_str(), "rb+");
         // 如果无法写入
         if(f == nullptr){
-            std::cout << "Cannot open " << name << "! Failed to write back!" << std::endl;
-            return false;
+            f = fopen(filePath.c_str(), "wb+");
+            std::cout << "Create " << name << " in " << filePath << std::endl;
         }
         fseek(f, blockID * PAGE_SIZE, SEEK_SET);
         fwrite(content, PAGE_SIZE, 1, f);
