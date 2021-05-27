@@ -6,6 +6,7 @@
 #define MINISQL_INTERPRETER_H
 #include "CommonHead.h"
 #include "API.h"
+#include "Utility/Table.h"
 using namespace std;
 
 class Interpreter {

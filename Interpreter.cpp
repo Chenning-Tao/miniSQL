@@ -3,8 +3,6 @@
 //
 
 #include "Interpreter.h"
-#include "API.h"
-#include "CommonHead.h"
 
 int Interpreter::interpret(string SQL) {
     regex Word("[a-z]+");
