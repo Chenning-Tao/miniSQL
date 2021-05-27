@@ -4,17 +4,38 @@
 
 #include "CatalogManager.h"
 
-bool CatalogManager::createTable(string tableName, Attribute tableAttribute) {
-//    pageInfo newPage = BM.fetchPage("Catalog", BM.blockNum(tableName));
-//    newPage.content[0] = tableAttribute.attributeNum();
-//    printf("%x", newPage.content[0]);
+void CatalogManager::createTable(string tableName, Attribute tableAttribute) {
+    if(TB->isExist(tableName)) throw "Table already existed!";
+    // 添加到table到数据结构中
+    TB->addNew(tableName, tableAttribute);
+    // 首先获取一个空闲的page
+    int newBlockID = freePointer.back();
+    freePointer.pop();
+    if(newBlockID == last){
+        ++last;
+        freePointer.push(last);
+    }
+    pageInfo newPage = BM->fetchPage("Catalog", newBlockID);
+    tablePointer.push_back(newBlockID);
+    /*
+    * table的存储方式:
+    * tableName 256位
+    * count(告诉有多少个) primary跟在后面(获得位置)
+    * 64位存name，4位存type，2位存unique和index
+    */
+    char *cur = newPage.content;
+    otherToChar(tableName, cur, 256);
+    tableAttribute.writeOut(cur);
+    BM->changeComplete("Catalog", newBlockID);
 }
 
-CatalogManager::CatalogManager(BufferManager *BM) {
+CatalogManager::CatalogManager(BufferManager *inBM) {
+    TB = new Table(inBM);
+    this->BM = inBM;
     pageInfo startPage = BM->fetchPage("Catalog", 0);
     /*
-     前2048K：存在表的个数 --> page
-     后2048K：空闲位置指针个数 --> 空闲page
+     * 前2048K：存在表的个数 --> page
+     * 后2048K：空闲位置指针个数+最后一个 --> 空闲page
      */
     char *used = startPage.content;
     char *unused = startPage.content + PAGE_SIZE/2;
@@ -26,11 +47,14 @@ CatalogManager::CatalogManager(BufferManager *BM) {
         usedSize = 0;
         otherToChar(usedSize, used);
         // 初始化空闲的
-        freePointer.push_back(1);
+        last = 1;
+        freePointer.push(1);
         unusedSize = 1;
         otherToChar(unusedSize, unused);
-        otherToChar(freePointer[0], unused);
+        otherToChar(last ,unused);
+        otherToChar(freePointer.front(), unused);
         // 告诉BM写入完成
+        startPage.usedSize = PAGE_SIZE;
         BM->changeComplete("Catalog", 0);
     }else {
         // 获取存在的
@@ -39,18 +63,44 @@ CatalogManager::CatalogManager(BufferManager *BM) {
         for(short i = 0; i < usedSize; ++i){
             charToOther(used, temp);
             tablePointer.push_back(temp);
+            // 读入数据表
+            pageInfo inTable = BM->fetchPage("Catalog", temp);
+            TB->readIn(inTable);
         }
         // 获取不存在的
         charToOther(unused, unusedSize);
+        charToOther(unused, last);
         for(short i = 0; i < unusedSize; ++i){
             charToOther(used, temp);
-            freePointer.push_back(temp);
+            freePointer.push(temp);
         }
     }
 }
 
 CatalogManager::~CatalogManager() {
+    pageInfo startPage = BM->fetchPage("Catalog", 0);
+    char *used = startPage.content;
+    char *unused = startPage.content + PAGE_SIZE/2;
+    short usedSize, unusedSize;
+
+    usedSize = short(tablePointer.size());
+    unusedSize = short(freePointer.size());
+
+    // 存在的
+    otherToChar(usedSize, used);
+    for(int i = 0; i < usedSize; ++i)
+        otherToChar(tablePointer[i], used);
+    // 空闲的
+    otherToChar(unusedSize, unused);
+    otherToChar(last, unused);
+    for(int i = 0; i < unusedSize; ++i){
+        int temp = freePointer.front();
+        otherToChar(temp, unused);
+        freePointer.pop();
+    }
+    BM->changeComplete("Catalog", 0);
     delete BM;
+    delete TB;
 }
 
 
