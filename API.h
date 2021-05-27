@@ -17,6 +17,7 @@ public:
     ~API();
     bool createTable(string tableName, Attribute tableAttribute);
     void initialize();
+    bool dropTable(string tableName);
 };
 
 #endif //MINISQL_API_H

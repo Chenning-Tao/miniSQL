@@ -13,7 +13,12 @@ int Interpreter::interpret(string SQL) {
         if(type == "insert"){
 
         }else if(type == "drop"){
-
+            smatch dropWord;
+            regex dropTable("drop[\\s]table[\\s]");
+            regex dropIndex("drop[\\s]index[\\s]");
+            // drop table
+            if(regex_search(SQL, dropWord, dropTable))
+                return this->dropTable(SQL.substr(dropWord[0].length()));
         }else if(type == "create"){
             smatch dropWord;    // 用来将前面这一段去掉
             regex createTable("create[\\s]table[\\s]");
@@ -80,7 +85,20 @@ int Interpreter::createTable(string SQL) {
     return 1;
 }
 
-int Interpreter::createIndex(string SQL)
-{
+int Interpreter::createIndex(string SQL){
 
+}
+
+bool Interpreter::dropTable(string SQL) {
+    regex Word("[a-z]+");
+    smatch tableNameMatch;
+    // 获得table的名字
+    if(regex_match(SQL, tableNameMatch, Word)) {
+        string tableName = tableNameMatch[0];
+        api.dropTable(tableName);
+    }
+    else{
+        cout << "Syntax error near delete!" << endl;
+        return false;
+    }
 }

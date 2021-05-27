@@ -14,7 +14,7 @@ bool API::createTable(string tableName, Attribute tableAttribute) {
         cout << error << endl;
         return false;
     }
-
+    return true;
 }
 
 void API::initialize() {
@@ -28,4 +28,15 @@ API::API() {
 
 API::~API() {
     delete CM;
+}
+
+bool API::dropTable(string tableName) {
+    try {
+        CM->dropTable(std::move(tableName));
+    }
+    catch (const char *error) {
+        cout << error << endl;
+        return false;
+    }
+    return true;
 }

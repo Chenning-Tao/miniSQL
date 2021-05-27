@@ -13,6 +13,8 @@ class Interpreter {
 private:
     int createTable(string SQL);
     int createIndex(string SQL);
+    bool dropTable(string SQL);
+    bool dropIndex(string SQL);
 public:
     API api;
     int interpret(string SQL);
