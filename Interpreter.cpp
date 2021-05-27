@@ -49,7 +49,7 @@ int Interpreter::createTable(string SQL) {
 
     regex bracket(R"(\((.+?)\)[\s]?;[\s]?)");
     regex intRule(R"(^[\s]?[\s]?([\w]+)[\s]int[\s]?(unique)?,[\s]?)");
-    regex charRule(R"(^[\s]?[\s]?([\w]+)[\s]char[\(]([0-9]+)[\)][\s]?(unique)?,[\s]?)");
+    regex charRule(R"(^[\s]?[\s]?([\w]+)[\s]char[\s]?[\(]([0-9]+)[\)][\s]?(unique)?,[\s]?)");
     regex floatRule(R"(^[\s]?[\s]?([\w]+)[\s]float[\s]?(unique)?,[\s]?)");
     regex primaryRule(R"(^[\s]?[\s]?primary[\s]key[\s]?[\(]([\w]+)[\)][\s]?,[\s]?)");
     smatch attributesS;
@@ -77,7 +77,7 @@ int Interpreter::createTable(string SQL) {
             attributes = attributes.substr(primaryS[0].length());
         }else{
             cout << "Error near ' " << attributes.substr(0, 10) << " '" <<endl;
-            break;
+            return 0;
         }
     }
 
