@@ -57,13 +57,18 @@ template<typename T> inline void charToOther(char *&cur, T &des){
     cur += size;
 }
 
-inline void stringToChar(std::string &raw, char *&cur, int length){
-    cur = raw.data();
+inline void otherToChar(std::string &raw, char *&cur, int length){
+    int size = raw.length();
+    for(int i = 0; i < size; ++i)
+        cur[i] = raw[i];
     cur += length;
 }
 
-inline void charToString(char *&cur, std::string &des, int length){
-    des = cur;
+inline void charToOther(char *&cur, std::string &des, int length){
+    for(int i = 0; i < length; ++i) {
+        if(cur[i] == '\0') break;
+        des.push_back(cur[i]);
+    }
     cur += length;
 }
 
