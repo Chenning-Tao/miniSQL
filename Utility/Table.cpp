@@ -57,3 +57,61 @@ bool Attribute::setPrimary(const string& inName) {
 short Attribute::attributeNum() const {
     return short(count+1);
 }
+
+void Attribute::readIn(char *content) {
+    charToOther(content, count);
+    charToOther(content, primary);
+    for(int i = 0; i < count; ++i){
+        charToOther(content, name[i], 64);
+        charToOther(content, type[i]);
+        charToOther(content, unique[i]);
+        charToOther(content, index[i]);
+    }
+    count -= 1;
+}
+
+void Attribute::writeOut(char *&content) {
+    otherToChar(count+1, content);
+    otherToChar(primary, content);
+    for(int i = 0; i <= count; ++i){
+        otherToChar(name[i], content, 64);
+        otherToChar(type[i], content);
+        otherToChar(unique[i], content);
+        otherToChar(index[i], content);
+    }
+}
+
+Table::Table(BufferManager *inBM) {
+    this->BM = inBM;
+}
+
+void Table::readIn(pageInfo inTable) {
+    /*
+     * table的存储方式:
+     * tableName 256位
+     * count(告诉有多少个) primary跟在后面(获得位置)
+     * 64位存name，4位存type，2位存unique和index
+     */
+    char *cur = inTable.content;
+    // 读入数据表名字
+    string inTableName;
+    charToOther(cur, inTableName, 256);
+    tableName.push_back(inTableName);
+    index.emplace(inTableName, tableName.size()-1);
+    // 读入数据表信息
+    Attribute inTableInfo;
+    inTableInfo.readIn(cur);
+    tableInfo.push_back(inTableInfo);
+}
+
+bool Table::isExist(const std::string& inTableName){
+    auto tableFind = index.find(inTableName);
+    if(tableFind == index.end()) return false;
+    else return true;
+}
+
+void Table::addNew(const std::string& inTableName, const Attribute& inTableInfo) {
+    tableName.push_back(inTableName);
+    tableInfo.push_back(inTableInfo);
+    index.emplace(inTableName, tableName.size() - 1);
+}
