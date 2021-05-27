@@ -10,11 +10,13 @@ using namespace std;
 
 class API {
 private:
+    BufferManager *BM;
+    CatalogManager *CM;
 public:
     API();
+    ~API();
     bool createTable(string tableName, Attribute tableAttribute);
     void initialize();
-    CatalogManager CM;
 };
 
 #endif //MINISQL_API_H
