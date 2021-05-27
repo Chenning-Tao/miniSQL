@@ -26,7 +26,7 @@ public:
     void setFloat(std::string inName, bool Unique);
     bool setPrimary(const std::string& inName);
     short attributeNum() const;
-    void readIn(char *content);
+    void readIn(char *&content);
     void writeOut(char *&content);
 };
 

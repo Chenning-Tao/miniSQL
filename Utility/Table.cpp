@@ -58,26 +58,31 @@ short Attribute::attributeNum() const {
     return short(count+1);
 }
 
-void Attribute::readIn(char *content) {
+void Attribute::readIn(char *&content) {
+    cout << "Attribute information: " << endl;
     charToOther(content, count);
     charToOther(content, primary);
+    cout << "Primary key:" << primary << endl;
     for(int i = 0; i < count; ++i){
         charToOther(content, name[i], 64);
         charToOther(content, type[i]);
         charToOther(content, unique[i]);
         charToOther(content, index[i]);
+        cout << name[i] << " " << type[i] << " " << unique[i] << " " << index[i] << endl;
     }
     count -= 1;
 }
 
 void Attribute::writeOut(char *&content) {
-    otherToChar(count+1, content);
+    otherToChar(short(count+1), content);
     otherToChar(primary, content);
+    cout << "Primary key:" << primary << endl;
     for(int i = 0; i <= count; ++i){
         otherToChar(name[i], content, 64);
         otherToChar(type[i], content);
         otherToChar(unique[i], content);
         otherToChar(index[i], content);
+        cout << name[i] << " " << type[i] << " " << unique[i] << " " << index[i] << endl;
     }
 }
 
@@ -96,6 +101,7 @@ void Table::readIn(pageInfo inTable) {
     // 读入数据表名字
     string inTableName;
     charToOther(cur, inTableName, 256);
+    cout << "Table Name: " << inTableName << endl;
     tableName.push_back(inTableName);
     index.emplace(inTableName, tableName.size()-1);
     // 读入数据表信息
