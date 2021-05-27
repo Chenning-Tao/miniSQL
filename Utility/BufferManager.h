@@ -39,6 +39,7 @@ public:
     int freePage();
     static int blockNum(const std::string& fileName);
     void changeComplete(const std::string& fileName, int blockID);
+    void deletePage(const std::string& fileName, int blockID);
 private:
     Page *bufferPool;
     std::vector<int> dirtyPage;

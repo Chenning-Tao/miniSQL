@@ -34,13 +34,15 @@ class Table {
 private:
     std::vector<Attribute> tableInfo;
     std::vector<std::string> tableName;
+    std::vector<int> tableBlock;
     std::unordered_map<std::string, int> index;
     BufferManager *BM;
 public:
     Table(BufferManager *inBM);
     void readIn(pageInfo inTable);
-    bool isExist(const std::string& inTableName);
-    void addNew(const std::string& inTableName, const Attribute& inTableInfo);
+    int isExist(const std::string& inTableName);
+    void addNew(const std::string& inTableName, const Attribute& inTableInfo, int inBlockID);
+    void deleteTable(std::string deleteTableName);
 };
 
 

@@ -102,16 +102,22 @@ void Table::readIn(pageInfo inTable) {
     Attribute inTableInfo;
     inTableInfo.readIn(cur);
     tableInfo.push_back(inTableInfo);
+    tableBlock.push_back(inTable.blockID);
 }
 
-bool Table::isExist(const std::string& inTableName){
+int Table::isExist(const std::string& inTableName){
     auto tableFind = index.find(inTableName);
-    if(tableFind == index.end()) return false;
-    else return true;
+    if(tableFind == index.end()) return -1;
+    else return tableBlock[tableFind->second];
 }
 
-void Table::addNew(const std::string& inTableName, const Attribute& inTableInfo) {
+void Table::addNew(const std::string& inTableName, const Attribute& inTableInfo, int inBlockID) {
     tableName.push_back(inTableName);
     tableInfo.push_back(inTableInfo);
+    tableBlock.push_back(inBlockID);
     index.emplace(inTableName, tableName.size() - 1);
+}
+
+void Table::deleteTable(std::string deleteTableName) {
+    index.erase(deleteTableName);
 }

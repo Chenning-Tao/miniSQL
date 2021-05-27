@@ -17,7 +17,7 @@
 
 typedef struct pageInfo{
     char *content;
-    int usedSize;
+    int blockID;
 }pageInfo;
 
 #endif //MINISQL_COMMONHEAD_H

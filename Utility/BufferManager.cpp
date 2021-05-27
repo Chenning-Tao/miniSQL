@@ -43,13 +43,7 @@ pageInfo BufferManager::fetchPage(std::string fileName, int blockID) {
         if(f != nullptr){
             fseek(f, blockID * PAGE_SIZE, SEEK_SET);
             fread(newPage.content, PAGE_SIZE, 1, f);
-            FILE *current = f;
-            fseek(f, 0, SEEK_END);
-            int disToEnd = int(f - current);
-            if (disToEnd > PAGE_SIZE)
-                newPage.usedSize = PAGE_SIZE;
-            else
-                newPage.usedSize = disToEnd;
+            newPage.blockID = blockID;
             bufferPool[freePageID].contentInit(newPage);
         }
         // 创建索引
@@ -83,6 +77,12 @@ BufferManager::~BufferManager() {
     for(int cur : dirtyPage){
         bufferPool[cur].pageWrite();
     }
+}
+
+void BufferManager::deletePage(const std::string& fileName, int blockID) {
+    pageInfo deletePage = fetchPage(fileName, blockID);
+    memset(deletePage.content, '\0', PAGE_SIZE);
+    changeComplete(fileName, blockID);
 }
 
 
@@ -126,7 +126,7 @@ pageInfo Page::initialize(std::string newName, int newBlockID) {
     free = false;
     pageInfo newPage;
     newPage.content = content;
-    newPage.usedSize = 0;
+    newPage.blockID = newBlockID;
     // 没啥用
     return newPage;
 }
@@ -138,7 +138,7 @@ void Page::makeDirty() {
 pageInfo Page::getPageInfo() {
     pageInfo temp;
     temp.content = content;
-    temp.usedSize = usedSize;
+    temp.blockID = blockID;
     return temp;
 }
 
@@ -152,7 +152,7 @@ void Page::unPinPage() {
 
 void Page::contentInit(pageInfo in) {
     content = in.content;
-    usedSize = in.usedSize;
+    blockID = in.blockID;
 }
 
 

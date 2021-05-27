@@ -14,6 +14,7 @@ public:
     CatalogManager(BufferManager *inBM);
     ~CatalogManager();
     void createTable(string tableName, Attribute tableAttribute);
+    void dropTable(string tableName);
 private:
     BufferManager *BM;
     Table *TB;

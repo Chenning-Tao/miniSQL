@@ -5,11 +5,11 @@
 #include "CatalogManager.h"
 
 void CatalogManager::createTable(string tableName, Attribute tableAttribute) {
-    if(TB->isExist(tableName)) throw "Table already existed!";
+    if(TB->isExist(tableName) != -1) throw "Table already existed!";
     // 添加到table到数据结构中
-    TB->addNew(tableName, tableAttribute);
+    int newBlockID = freePointer.front();
     // 首先获取一个空闲的page
-    int newBlockID = freePointer.back();
+    TB->addNew(tableName, tableAttribute, newBlockID);
     freePointer.pop();
     if(newBlockID == last){
         ++last;
@@ -54,7 +54,6 @@ CatalogManager::CatalogManager(BufferManager *inBM) {
         otherToChar(last ,unused);
         otherToChar(freePointer.front(), unused);
         // 告诉BM写入完成
-        startPage.usedSize = PAGE_SIZE;
         BM->changeComplete("Catalog", 0);
     }else {
         // 获取存在的
@@ -71,7 +70,7 @@ CatalogManager::CatalogManager(BufferManager *inBM) {
         charToOther(unused, unusedSize);
         charToOther(unused, last);
         for(short i = 0; i < unusedSize; ++i){
-            charToOther(used, temp);
+            charToOther(unused, temp);
             freePointer.push(temp);
         }
     }
@@ -94,13 +93,28 @@ CatalogManager::~CatalogManager() {
     otherToChar(unusedSize, unused);
     otherToChar(last, unused);
     for(int i = 0; i < unusedSize; ++i){
-        int temp = freePointer.front();
-        otherToChar(temp, unused);
+        otherToChar(freePointer.front(), unused);
         freePointer.pop();
     }
     BM->changeComplete("Catalog", 0);
-    delete BM;
     delete TB;
+    delete BM;
+}
+
+void CatalogManager::dropTable(string tableName) {
+    int blockID = TB->isExist(tableName);
+    if(blockID == -1) throw "This table doesn't exists!";
+    BM->deletePage("Catalog", blockID);
+    TB->deleteTable(tableName);
+    // 在已有list中删除
+    for(auto it=tablePointer.begin(); it!= tablePointer.end(); ) {
+        if (*it == blockID)
+            it = tablePointer.erase(it);
+        else
+            ++it;
+    }
+    // 在空闲中加上
+    freePointer.push(blockID);
 }
 
 

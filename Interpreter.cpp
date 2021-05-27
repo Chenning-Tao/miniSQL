@@ -40,7 +40,7 @@ int Interpreter::interpret(string SQL) {
 }
 
 int Interpreter::createTable(string SQL) {
-    regex Word("[a-z]+");
+    regex Word("[\\w]+");
     smatch tableNameMatch;
     // 获得table的名字
     regex_search(SQL, tableNameMatch, Word);
@@ -90,11 +90,11 @@ int Interpreter::createIndex(string SQL){
 }
 
 bool Interpreter::dropTable(string SQL) {
-    regex Word("[a-z]+");
+    regex Word("([\\w]+)[\\s]?;");
     smatch tableNameMatch;
     // 获得table的名字
     if(regex_match(SQL, tableNameMatch, Word)) {
-        string tableName = tableNameMatch[0];
+        string tableName = tableNameMatch[1];
         api.dropTable(tableName);
     }
     else{
