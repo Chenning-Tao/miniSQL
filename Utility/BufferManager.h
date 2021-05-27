@@ -57,4 +57,14 @@ template<typename T> inline void charToOther(char *&cur, T &des){
     cur += size;
 }
 
+inline void stringToChar(std::string &raw, char *&cur, int length){
+    cur = raw.data();
+    cur += length;
+}
+
+inline void charToString(char *&cur, std::string &des, int length){
+    des = cur;
+    cur += length;
+}
+
 #endif //MINISQL_BUFFERMANAGER_H
