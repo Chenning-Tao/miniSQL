@@ -11,7 +11,7 @@ using namespace std;
 
 class CatalogManager {
 public:
-    CatalogManager(BufferManager *inBM);
+    CatalogManager(BufferManager *inBM, Table *inTB);
     ~CatalogManager();
     void createTable(string tableName, Attribute tableAttribute);
     void dropTable(string tableName);

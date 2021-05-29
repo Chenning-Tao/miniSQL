@@ -29,8 +29,8 @@ void CatalogManager::createTable(string tableName, Attribute tableAttribute) {
     BM->changeComplete("Catalog", newBlockID);
 }
 
-CatalogManager::CatalogManager(BufferManager *inBM) {
-    TB = new Table(inBM);
+CatalogManager::CatalogManager(BufferManager *inBM, Table *inTB) {
+    TB = inTB;
     this->BM = inBM;
     pageInfo startPage = BM->fetchPage("Catalog", 0);
     /*
@@ -116,5 +116,3 @@ void CatalogManager::dropTable(string tableName) {
     // 在空闲中加上
     freePointer.push(blockID);
 }
-
-
