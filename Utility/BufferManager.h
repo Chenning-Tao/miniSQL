@@ -40,10 +40,12 @@ public:
     static int blockNum(const std::string& fileName);
     void changeComplete(const std::string& fileName, int blockID);
     void deletePage(const std::string& fileName, int blockID);
+    void deleteFile(const std::string& fileName);
 private:
     Page *bufferPool;
     std::vector<int> dirtyPage;
     std::unordered_map<std::string, int> index;
+    std::vector<std::string> deleteList;
 };
 
 template<typename T> inline void otherToChar(T raw, char *&cur){

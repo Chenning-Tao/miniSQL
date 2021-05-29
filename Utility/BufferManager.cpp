@@ -77,12 +77,20 @@ BufferManager::~BufferManager() {
     for(int cur : dirtyPage){
         bufferPool[cur].pageWrite();
     }
+    for(std::string cur : deleteList){
+        remove(cur.data());
+    }
 }
 
 void BufferManager::deletePage(const std::string& fileName, int blockID) {
     pageInfo deletePage = fetchPage(fileName, blockID);
     memset(deletePage.content, '\0', PAGE_SIZE);
     changeComplete(fileName, blockID);
+}
+
+void BufferManager::deleteFile(const std::string& fileName) {
+    std::string filePath = DatabasePath + fileName;
+    deleteList.push_back(filePath);
 }
 
 
