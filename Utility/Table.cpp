@@ -3,6 +3,8 @@
 //
 
 #include "Table.h"
+
+#include <utility>
 using namespace std;
 
 void Attribute::setInt(string inName, bool Unique) {
@@ -59,7 +61,6 @@ short Attribute::attributeNum() const {
 }
 
 void Attribute::readIn(char *&content) {
-    cout << "Attribute information: " << endl;
     charToOther(content, count);
     charToOther(content, primary);
     cout << "Primary key:" << primary << endl;
@@ -76,13 +77,18 @@ void Attribute::readIn(char *&content) {
 void Attribute::writeOut(char *&content) {
     otherToChar(short(count+1), content);
     otherToChar(primary, content);
-    cout << "Primary key:" << primary << endl;
     for(int i = 0; i <= count; ++i){
         otherToChar(name[i], content, 64);
         otherToChar(type[i], content);
         otherToChar(unique[i], content);
         otherToChar(index[i], content);
-        cout << name[i] << " " << type[i] << " " << unique[i] << " " << index[i] << endl;
+    }
+}
+
+void Attribute::checkInfo(std::vector<short> inType) {
+    if (inType.size() != count + 1) throw string("Size doesn't match!");
+    for(int i = 0; i < inType.size(); ++i){
+        if(inType[i] != type[i]) throw string("Column " + to_string(i+1) + " doesn't match!");
     }
 }
 
@@ -126,4 +132,15 @@ void Table::addNew(const std::string& inTableName, const Attribute& inTableInfo,
 
 void Table::deleteTable(std::string deleteTableName) {
     index.erase(deleteTableName);
+}
+
+void Table::checkTable(std::string inTableName, std::vector<short> type) {
+    auto tableFind = index.find(inTableName);
+    if(tableFind == index.end()) throw string("Table " + inTableName + " doesn't exist!");
+    try{
+        tableInfo[tableFind->second].checkInfo(std::move(type));
+    }
+    catch (string error) {
+        throw error;
+    }
 }
