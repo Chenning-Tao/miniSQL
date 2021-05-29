@@ -25,10 +25,12 @@ void API::initialize() {
 API::API() {
     BM = new BufferManager;
     CM = new CatalogManager(BM);
+    RM = new RecordManager(BM);
 }
 
 API::~API() {
     delete CM;
+    delete RM;
 }
 
 bool API::dropTable(string tableName) {
@@ -37,7 +39,19 @@ bool API::dropTable(string tableName) {
         printf("Success!\n");
     }
     catch (const char *error) {
-        cout << error << endl;
+        printf("%s\n", error);
+        return false;
+    }
+    return true;
+}
+
+bool API::insert(string tableName, vector<short> type, vector<string> content) {
+    try {
+        RM->insert(std::move(tableName), std::move(type), std::move(content));
+        printf("Success!\n");
+    }
+    catch (const char *error) {
+        printf("%s\n", error);
         return false;
     }
     return true;
