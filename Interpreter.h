@@ -15,6 +15,7 @@ private:
     int createIndex(string SQL);
     bool dropTable(string SQL);
     bool dropIndex(string SQL);
+    bool insert(string tableName, string tableAttribute);
 public:
     API api;
     int interpret(string SQL);

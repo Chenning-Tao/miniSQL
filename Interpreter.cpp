@@ -11,7 +11,13 @@ int Interpreter::interpret(string SQL) {
         // 用于判断是哪类操作
         string type = firstWord.str(0);
         if(type == "insert"){
-
+            smatch attribute;
+            regex insertBody(R"(insert[\s]into[\s]([\w]+)[\s]values[\(](.*)[\)];)");
+            if(regex_match(SQL, attribute, insertBody)){
+                return this->insert(attribute[1], attribute[2]);
+            }
+            else printf("Syntax error near insert!");
+            return 0;
         }else if(type == "drop"){
             smatch dropWord;
             regex dropTable("drop[\\s]table[\\s]");
@@ -101,4 +107,36 @@ bool Interpreter::dropTable(string SQL) {
         cout << "Syntax error near delete!" << endl;
         return false;
     }
+}
+
+bool Interpreter::insert(string tableName, string tableAttribute) {
+    tableAttribute.push_back(',');
+    regex charRule("[\\s]?'(.*)'[\\s]?");
+    regex intRule("[\\s]?([0-9]+)[\\s]?");
+    regex floatRule("[\\s]?([0-9]+.[0-9]+)[\\s]?");
+    smatch word;
+    vector<short> type;
+    vector<string> content;
+    char *split = strtok(tableAttribute.data(), ",");
+    while(split != nullptr){
+        string temp(split);
+        if(regex_match(temp, word, charRule)){
+            content.emplace_back(word[1]);
+            type.push_back(word[1].length());
+        }
+        else if(regex_match(temp, word, intRule)){
+            content.emplace_back(word[1]);
+            type.push_back(-1);
+        }
+        else if(regex_match(temp, word, floatRule)){
+            content.emplace_back(word[1]);
+            type.push_back(0);
+        }
+        else {
+            printf("Syntax error near %s!", split);
+            return false;
+        }
+        split = strtok(nullptr, ",");
+    }
+    api.insert(tableName, type, content);
 }
