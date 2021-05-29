@@ -6,15 +6,16 @@
 
 #include <utility>
 
-bool API::createTable(string tableName, Attribute tableAttribute) {
+bool API::createTable(const string& tableName, Attribute tableAttribute) {
     try {
-        CM->createTable(std::move(tableName), std::move(tableAttribute));
+        CM->createTable(tableName, std::move(tableAttribute));
         printf("Success!\n");
     }
     catch (const char *error) {
         cout << error << endl;
         return false;
     }
+    RM->createTable(tableName);
     return true;
 }
 
@@ -24,24 +25,26 @@ void API::initialize() {
 
 API::API() {
     BM = new BufferManager;
-    CM = new CatalogManager(BM);
-    RM = new RecordManager(BM);
+    TB = new Table(BM);
+    CM = new CatalogManager(BM, TB);
+    RM = new RecordManager(BM, CM, TB);
 }
 
 API::~API() {
-    delete CM;
     delete RM;
+    delete CM;
 }
 
 bool API::dropTable(string tableName) {
     try {
-        CM->dropTable(std::move(tableName));
+        CM->dropTable(tableName);
         printf("Success!\n");
     }
     catch (const char *error) {
         printf("%s\n", error);
         return false;
     }
+    RM->dropTable(tableName);
     return true;
 }
 
@@ -50,8 +53,8 @@ bool API::insert(string tableName, vector<short> type, vector<string> content) {
         RM->insert(std::move(tableName), std::move(type), std::move(content));
         printf("Success!\n");
     }
-    catch (const char *error) {
-        printf("%s\n", error);
+    catch (string error) {
+        printf("%s\n", error.data());
         return false;
     }
     return true;

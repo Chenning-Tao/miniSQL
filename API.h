@@ -7,6 +7,7 @@
 #include "CommonHead.h"
 #include "Utility/CatalogManager.h"
 #include "Utility/RecordManager.h"
+#include "Utility/Table.h"
 using namespace std;
 
 class API {
@@ -14,10 +15,11 @@ private:
     BufferManager *BM;
     CatalogManager *CM;
     RecordManager *RM;
+    Table *TB;
 public:
     API();
     ~API();
-    bool createTable(string tableName, Attribute tableAttribute);
+    bool createTable(const string& tableName, Attribute tableAttribute);
     void initialize();
     bool dropTable(string tableName);
     bool insert(string tableName, vector<short> type, vector<string> content);
