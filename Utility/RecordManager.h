@@ -10,18 +10,26 @@
 #include "CatalogManager.h"
 #define INFO_BLOCK_NUM 2
 using namespace std;
+/*
+ * 需要两个文件用来存储内容
+ * NAME_INFO
+ * 第0块存有多少页
+ * 第1块开始后面开始存每一页有多少内容
+ * NAME
+ * 每一页开头第一个是空闲指针，后面存内容
+ */
 
 class RecordManager {
 private:
     BufferManager *BM;
     CatalogManager *CM;
     Table *TB;
-    void initialHead(string tableName, vector<int> &pageRecord);
+    void initialHead(const string& tableName, vector<int> &pageRecord);
     void addNewPage(const string& tableName, int pageNum);
 public:
     RecordManager(BufferManager *inBM, CatalogManager *inCM, Table *inTB);
     bool insert(const string& tableName, vector<short> type, vector<string> content);
-    void createTable(string tableName);
+    void createTable(const string& tableName);
     void dropTable(const string& tableName);
 };
 

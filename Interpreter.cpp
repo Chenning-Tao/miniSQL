@@ -16,7 +16,7 @@ int Interpreter::interpret(string SQL) {
             if(regex_match(SQL, attribute, insertBody)){
                 return this->insert(attribute[1], attribute[2]);
             }
-            else printf("Syntax error near insert!");
+            else printf("Syntax error near insert!\n");
             return 0;
         }else if(type == "drop"){
             smatch dropWord;
