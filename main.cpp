@@ -1,14 +1,13 @@
 #include "CommonHead.h"
 #include "Interpreter.h"
-#include "API.h"
 using namespace std;
 
 int main() {
     Interpreter *c;
     c = new Interpreter;
     string SQL, line;
-    cout << "-------------miniSQL interface-------------" << endl;
-    cout << "miniSQL>";
+    printf("-------------miniSQL interface-------------\n");
+    printf("miniSQL>");
     while (true){
         getline(cin, line);
         transform(line.begin(), line.end(), line.begin(), ::tolower);
@@ -20,8 +19,12 @@ int main() {
         // 如果没有;号
         SQL += line;
         if(line.find(';') != std::string::npos){
-            int condition = c->interpret(SQL);
-            cout << "miniSQL>";
+            clock_t start, end;
+            start = clock();
+            c->interpret(SQL);
+            end = clock();
+            printf(" in %.3fs.\n", double (end-start)/CLOCKS_PER_SEC);
+            printf("miniSQL>");
             SQL = "";
         }
     }

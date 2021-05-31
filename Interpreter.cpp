@@ -14,7 +14,7 @@ int Interpreter::interpret(string SQL) {
         string type = firstWord.str(0);
         if(type == "insert"){
             smatch attribute;
-            regex insertBody(R"(insert[\s]into[\s]([\w]+)[\s]values[\s?][\(](.*)[\)][\s]?;)");
+            regex insertBody(R"(insert[\s]into[\s]([\w]+)[\s]values[\s]?[\(](.*)[\)][\s]?;)");
             if(regex_match(SQL, attribute, insertBody)){
                 return this->insert(attribute[1], attribute[2]);
             }
@@ -39,16 +39,21 @@ int Interpreter::interpret(string SQL) {
                 cout << "Syntax error near create!" << endl;
         }else if(type == "delete"){
 
-        }else if(type == "select"){
+        }else if(type == "select") {
             smatch word;
             regex unconditional(R"(select[\s](.*)[\s]from[\s]([\w]+)[\s]?;)");
-            if(regex_match(SQL, word, unconditional)){
+            if (regex_match(SQL, word, unconditional)) {
                 select(word[1], word[2]);
-            }
+            } else printf("Syntax error near select!\n");
+        }else if(type == "execfile"){
+            smatch filename;
+            regex filenameRule(R"(execfile[\s]([\w.]+)[\s]?;)");
+            if (regex_match(SQL, filename, filenameRule)){
+                execfile(filename[1]);
+            }else printf("Syntax error near execfile!\n");
         }else
-            cout << "Syntax error!" << endl;
-    } else
-        cout << "Syntax error!" << endl;
+            printf("Syntax error!\n");
+    } else printf("Syntax error!\n");
 }
 
 int Interpreter::createTable(string SQL) {
@@ -152,7 +157,7 @@ bool Interpreter::select(string column, string tableName) {
     char *split = strtok(column.data(), ",");
 
     smatch word;
-    regex wordRule(R"([\s]?([\w]+)[\s]?)");
+    regex wordRule(R"([\s]?([\w*]+)[\s]?)");
     vector<string> Column;
     while(split != nullptr){
         string temp(split);
@@ -161,4 +166,28 @@ bool Interpreter::select(string column, string tableName) {
         split = strtok(nullptr, ",");
     }
     api.select(Column, std::move(tableName));
+}
+
+bool Interpreter::execfile(const string &fileName) {
+    ifstream file;
+    file.open(fileName, ios::in);
+    if(!file.is_open()) {
+        printf("File doesn't exist!\n");
+        return false;
+    }
+    string SQL, line;
+    while (!file.eof()) {
+        getline(file, line);
+        SQL += line;
+        if(line.find(';') != std::string::npos){
+            clock_t start, end;
+            start = clock();
+            printf("miniSQL>  %s\n", SQL.data());
+            interpret(SQL);
+            end = clock();
+            printf(" in %.3fs.\n", double (end-start)/CLOCKS_PER_SEC);
+            SQL = "";
+        }
+    }
+    file.close();
 }
