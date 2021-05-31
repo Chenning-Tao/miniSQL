@@ -24,12 +24,11 @@ private:
     BufferManager *BM;
     CatalogManager *CM;
     Table *TB;
-    void initialHead(const string& tableName, vector<int> &pageRecord);
-    void addNewPage(const string& tableName, int pageNum);
+    void initialHead(const string& tableName, vector<int> &pageRecord, int &recordSize, int &recordPerPage);
 public:
     RecordManager(BufferManager *inBM, CatalogManager *inCM, Table *inTB);
-    bool insert(const string& tableName, vector<short> type, vector<string> content);
-    void createTable(const string& tableName);
+    void insert(const string& tableName, vector<short> type, vector<string> content);
+    void createTable(const string& tableName, Attribute tableInfo);
     void dropTable(const string& tableName);
 };
 
