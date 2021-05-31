@@ -12,9 +12,11 @@
 class Page{
 public:
     Page();
+    ~Page();
     bool pageWrite();
     bool isDirty() const;
     bool isFree() const;
+    void makeFree();
     void makeDirty();
     void pinPage();
     void unPinPage();
@@ -41,6 +43,7 @@ public:
     void changeComplete(const std::string& fileName, int blockID);
     void deletePage(const std::string& fileName, int blockID);
     void deleteFile(const std::string& fileName);
+    void flush();
 private:
     Page *bufferPool;
     std::vector<int> dirtyPage;

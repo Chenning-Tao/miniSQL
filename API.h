@@ -19,10 +19,10 @@ private:
 public:
     API();
     ~API();
-    bool createTable(const string& tableName, Attribute tableAttribute);
+    bool createTable(const string& tableName, const Attribute& tableAttribute);
     void initialize();
     bool dropTable(string tableName);
-    bool insert(string tableName, vector<short> type, vector<string> content);
+    bool insert(const string& tableName, const vector<short>& type, vector<string> content);
 };
 
 #endif //MINISQL_API_H

@@ -6,16 +6,16 @@
 
 #include <utility>
 
-bool API::createTable(const string& tableName, Attribute tableAttribute) {
+bool API::createTable(const string& tableName, const Attribute& tableAttribute) {
     try {
-        CM->createTable(tableName, std::move(tableAttribute));
+        CM->createTable(tableName, tableAttribute);
         printf("Success!\n");
     }
     catch (const char *error) {
         cout << error << endl;
         return false;
     }
-    RM->createTable(tableName);
+    RM->createTable(tableName, tableAttribute);
     return true;
 }
 
@@ -48,14 +48,21 @@ bool API::dropTable(string tableName) {
     return true;
 }
 
-bool API::insert(string tableName, vector<short> type, vector<string> content) {
+bool API::insert(const string& tableName, const vector<short>& type, vector<string> content) {
     try {
-        RM->insert(std::move(tableName), std::move(type), std::move(content));
+        TB->checkTable(tableName, type);
+    }
+    catch (string error) {
+        throw error;
+    }
+    try {
+        RM->insert(tableName, type, content);
         printf("Success!\n");
     }
     catch (string error) {
         printf("%s\n", error.data());
         return false;
     }
+
     return true;
 }

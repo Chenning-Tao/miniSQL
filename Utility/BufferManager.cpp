@@ -59,8 +59,7 @@ pageInfo BufferManager::fetchPage(std::string fileName, int blockID) {
 int BufferManager::freePage() {
     // 如果有free page，返回bufferPoolID，没有返回-1
     for(int i = 0; i < POOL_SIZE; ++i){
-        if(bufferPool[i].isFree())
-            return i;
+        if(bufferPool[i].isFree()) return i;
     }
     return -1;
 }
@@ -91,6 +90,22 @@ void BufferManager::deletePage(const std::string& fileName, int blockID) {
 void BufferManager::deleteFile(const std::string& fileName) {
     std::string filePath = DatabasePath + fileName;
     deleteList.push_back(filePath);
+}
+
+void BufferManager::flush() {
+    for(int cur : dirtyPage){
+        bufferPool[cur].pageWrite();
+    }
+    std::vector<int>().swap(dirtyPage);
+    for(std::string cur : deleteList){
+        auto getID = index.find(cur);
+        if(getID != index.end()) {
+            bufferPool[getID->second].makeFree();
+            index.erase(getID);
+        }
+        remove(cur.data());
+    }
+    std::vector<std::string>().swap(deleteList);
 }
 
 
@@ -162,5 +177,11 @@ void Page::contentInit(pageInfo in) {
     content = in.content;
     blockID = in.blockID;
 }
+
+void Page::makeFree() {
+    free = true;
+}
+
+Page::~Page() = default;
 
 
