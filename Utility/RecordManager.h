@@ -30,6 +30,10 @@ public:
     void insert(const string& tableName, vector<short> type, vector<string> content);
     void createTable(const string& tableName, Attribute tableInfo);
     void dropTable(const string& tableName);
+    void select(const string& tableName, const vector<short>& type, int separation);
+    void print(const vector<string> &result);
+    static void print(int count);
+    void printTitle(const vector<string> &column, const vector<short> &type, int &separation);
 };
 
 

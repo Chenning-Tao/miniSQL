@@ -30,6 +30,7 @@ public:
     void writeOut(char *&content);
     void checkInfo(std::vector<short> inType);
     void getType(std::vector<short> &inType);
+    void getColumn(std::vector<std::string> &Column);
     void checkColumn(std::vector<std::string> Column);
 };
 
@@ -45,6 +46,7 @@ public:
     void readIn(pageInfo inTable);
     int isExist(const std::string& inTableName);
     std::vector<short> getType(const std::string& inTableName);
+    std::vector<std::string> getColumn(const std::string& inTableName);
     void addNew(const std::string& inTableName, const Attribute& inTableInfo, int inBlockID);
     void deleteTable(std::string deleteTableName);
     void checkTable(const std::string& inTableName, std::vector<short> type);

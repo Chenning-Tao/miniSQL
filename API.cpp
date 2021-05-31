@@ -38,7 +38,7 @@ API::~API() {
 bool API::dropTable(string tableName) {
     try {
         CM->dropTable(tableName);
-        printf("Success!\n");
+        printf("Success");
     }
     catch (const char *error) {
         printf("%s\n", error);
@@ -49,16 +49,17 @@ bool API::dropTable(string tableName) {
 }
 
 bool API::insert(const string& tableName, const vector<short>& type, vector<string> content) {
-    vector<short> trueType;
     try {
-        trueType = TB->checkTable(tableName, type);
+        TB->checkTable(tableName, type);
     }
     catch (string error) {
-        throw error;
+        printf("%s\n", error.data());
+        return false;
     }
+    vector<short> trueType = TB->getType(tableName);
     try {
         RM->insert(tableName, trueType, content);
-        printf("Success!\n");
+        printf("Success");
     }
     catch (string error) {
         printf("%s\n", error.data());
@@ -66,4 +67,25 @@ bool API::insert(const string& tableName, const vector<short>& type, vector<stri
     }
 
     return true;
+}
+
+bool API::select(const vector<string> &column, string tableName) {
+    // 无条件选择
+    // todo: 选择某几列
+    if(TB->isExist(tableName) == -1) {
+        printf("Table %s doesn't exist!\n", tableName.data());
+        return false;
+    }
+    if(column[0] != "*") {
+        try {TB->checkColumn(column, tableName);}
+        catch (string error) {
+            printf("%s\n", error.data());
+        }
+    }
+    int separation;
+    vector<short> type =  TB->getType(tableName);
+    vector<string> columnName = TB->getColumn(tableName);
+    RM->printTitle(columnName, type, separation);
+    RM->select(tableName, type, separation);
+    printf("Success");
 }

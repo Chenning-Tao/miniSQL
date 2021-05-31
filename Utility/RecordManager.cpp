@@ -121,3 +121,98 @@ void RecordManager::dropTable(const string& tableName) {
     BM->flush();
 }
 
+void RecordManager::select(const string& tableName, const vector<short>& type, int separation) {
+    vector<int> pageRecord;
+    int recordSize, recordPerPage;
+    initialHead(tableName, pageRecord, recordSize, recordPerPage);
+
+    pageInfo record;
+    int count;
+    int resultCount = 0;
+    for(int i = 0; i < pageRecord.size(); ++i){
+        count = pageRecord[i];
+        record = BM->fetchPage(tableName, i);
+        char *point = record.content;
+        int freePointer = 0;
+        vector<vector<string>> result;
+        int tempInt;
+        float tempFloat;
+        string tempString;
+        char *tempChar = new char[8];
+
+        while(true){
+            if(freePointer == 0){
+                charToOther(point, freePointer);
+                point -= 4;
+                point += recordSize;
+            }
+            else{
+                --count;
+                --freePointer;
+                ++resultCount;
+                vector<string> tempResult;
+                for(short cur:type){
+                    if(cur == -1){
+                        charToOther(point, tempInt);
+                        sprintf(tempChar, "%-11d", tempInt);
+                        tempResult.emplace_back(tempChar);
+                    }
+                    else if(cur == 0){
+                        charToOther(point, tempFloat);
+                        sprintf(tempChar, "%-7.4f", tempFloat);
+                        tempResult.emplace_back(tempChar);
+                    }
+                    else {
+                        charToOther(point, tempString, cur);
+                        tempString.push_back(' ');
+                        tempResult.emplace_back(tempString);
+                        tempString.clear();
+                    }
+                }
+                print(tempResult);
+            }
+            if(count == 0) break;
+        }
+    }
+    print(separation);
+    printf("%d rows in set.\n", resultCount);
+}
+
+void RecordManager::print(const vector<string> &result) {
+    for(int j = 0; j < result.size(); ++j) {
+        if (j + 1 == result.size())
+            printf(" %s", result[j].data());
+        else printf(" %s|", result[j].data());
+    }
+    printf("\n");
+}
+
+void RecordManager::printTitle(const vector<string> &column, const vector<short> &type, int &separation) {
+    separation = 0;
+    for(int i = 0; i < column.size(); ++i){
+        if (type[i] == -1 || type[i] == 0)
+            separation += 13;
+        else
+            separation += (type[i]+3);
+    }
+    print(separation);
+    for(int i = 0; i < column.size(); ++i){
+        if (type[i] == -1 || type[i] == 0){
+            if(i+1 != column.size())
+                printf(" %-10s |", column[i].data());
+            else
+                printf(" %-10s", column[i].data());;
+        }
+        else
+            printf(" %-*s |", type[i], column[i].data());
+    }
+    printf("\n");
+    print(separation);
+}
+
+void RecordManager::print(int count) {
+    for(int i = 0; i < count; ++i)
+        printf("-");
+    printf("\n");
+}
+

@@ -113,6 +113,12 @@ void Attribute::checkColumn(std::vector<std::string> Column) {
     }
 }
 
+void Attribute::getColumn(vector<std::string> &Column) {
+    for(int i = 0; i <= count; ++i){
+        Column.push_back(name[i]);
+    }
+}
+
 Table::Table(BufferManager *inBM) {
     this->BM = inBM;
 }
@@ -183,5 +189,13 @@ vector<short> Table::getType(const string &inTableName) {
     if(tableFind == index.end()) throw string("Table " + inTableName + " doesn't exist!");
     vector<short> result;
     tableInfo[tableFind->second].getType(result);
+    return result;
+}
+
+vector<string> Table::getColumn(const string &inTableName) {
+    auto tableFind = index.find(inTableName);
+    if(tableFind == index.end()) throw string("Table " + inTableName + " doesn't exist!");
+    vector<string> result;
+    tableInfo[tableFind->second].getColumn(result);
     return result;
 }

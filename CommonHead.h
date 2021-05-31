@@ -14,6 +14,8 @@
 #include <vector>
 #include <queue>
 #include <utility>
+#include <ctime>
+#include <fstream>
 
 typedef struct pageInfo{
     char *content;
