@@ -4,6 +4,8 @@
 
 #include "Interpreter.h"
 
+#include <utility>
+
 int Interpreter::interpret(string SQL) {
     regex Word("[a-z]+");
     smatch firstWord;
@@ -12,7 +14,7 @@ int Interpreter::interpret(string SQL) {
         string type = firstWord.str(0);
         if(type == "insert"){
             smatch attribute;
-            regex insertBody(R"(insert[\s]into[\s]([\w]+)[\s]values[\(](.*)[\)];)");
+            regex insertBody(R"(insert[\s]into[\s]([\w]+)[\s]values[\s?][\(](.*)[\)][\s]?;)");
             if(regex_match(SQL, attribute, insertBody)){
                 return this->insert(attribute[1], attribute[2]);
             }
@@ -38,7 +40,11 @@ int Interpreter::interpret(string SQL) {
         }else if(type == "delete"){
 
         }else if(type == "select"){
-
+            smatch word;
+            regex unconditional(R"(select[\s](.*)[\s]from[\s]([\w]+)[\s]?;)");
+            if(regex_match(SQL, word, unconditional)){
+                select(word[1], word[2]);
+            }
         }else
             cout << "Syntax error!" << endl;
     } else
@@ -139,4 +145,20 @@ bool Interpreter::insert(string tableName, string tableAttribute) {
         split = strtok(nullptr, ",");
     }
     api.insert(tableName, type, content);
+}
+
+bool Interpreter::select(string column, string tableName) {
+    column.push_back(',');
+    char *split = strtok(column.data(), ",");
+
+    smatch word;
+    regex wordRule(R"([\s]?([\w]+)[\s]?)");
+    vector<string> Column;
+    while(split != nullptr){
+        string temp(split);
+        if(regex_match(temp, word, wordRule))
+            Column.emplace_back(word[1]);
+        split = strtok(nullptr, ",");
+    }
+    api.select(Column, std::move(tableName));
 }
