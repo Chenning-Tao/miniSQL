@@ -99,6 +99,20 @@ void Attribute::getType(vector<short> &inType) {
     }
 }
 
+void Attribute::checkColumn(std::vector<std::string> Column) {
+    // todo: 完成
+    bool flag = false;
+    for(auto &i : Column){
+        flag = false;
+        for(int j = 0; j <= count; ++j){
+            if(name[j] == i){
+                flag = true;
+
+            }
+        }
+    }
+}
+
 Table::Table(BufferManager *inBM) {
     this->BM = inBM;
 }
@@ -125,6 +139,7 @@ void Table::readIn(pageInfo inTable) {
 }
 
 int Table::isExist(const std::string& inTableName){
+    // 如果没找到返回-1 找到返回是在第几个block
     auto tableFind = index.find(inTableName);
     if(tableFind == index.end()) return -1;
     else return tableBlock[tableFind->second];
@@ -141,16 +156,32 @@ void Table::deleteTable(std::string deleteTableName) {
     index.erase(deleteTableName);
 }
 
-vector<short> Table::checkTable(std::string inTableName, std::vector<short> type) {
-    vector<short> trueType;
+void Table::checkTable(const std::string& inTableName, std::vector<short> type) {
     auto tableFind = index.find(inTableName);
     if(tableFind == index.end()) throw string("Table " + inTableName + " doesn't exist!");
     try{
         tableInfo[tableFind->second].checkInfo(std::move(type));
-        tableInfo[tableFind->second].getType(trueType);
     }
     catch (string error) {
         throw error;
     }
-    return trueType;
+}
+
+void Table::checkColumn(const vector<std::string> &column, string &inTableName) {
+    auto tableFind = index.find(inTableName);
+    if(tableFind == index.end()) throw string("Table " + inTableName + " doesn't exist!");
+    try{
+        tableInfo[tableFind->second].checkColumn(column);
+    }
+    catch (string error){
+        throw error;
+    }
+}
+
+vector<short> Table::getType(const string &inTableName) {
+    auto tableFind = index.find(inTableName);
+    if(tableFind == index.end()) throw string("Table " + inTableName + " doesn't exist!");
+    vector<short> result;
+    tableInfo[tableFind->second].getType(result);
+    return result;
 }

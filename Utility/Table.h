@@ -30,6 +30,7 @@ public:
     void writeOut(char *&content);
     void checkInfo(std::vector<short> inType);
     void getType(std::vector<short> &inType);
+    void checkColumn(std::vector<std::string> Column);
 };
 
 class Table {
@@ -43,9 +44,11 @@ public:
     Table(BufferManager *inBM);
     void readIn(pageInfo inTable);
     int isExist(const std::string& inTableName);
+    std::vector<short> getType(const std::string& inTableName);
     void addNew(const std::string& inTableName, const Attribute& inTableInfo, int inBlockID);
     void deleteTable(std::string deleteTableName);
-    std::vector<short> checkTable(std::string inTableName, std::vector<short> type);
+    void checkTable(const std::string& inTableName, std::vector<short> type);
+    void checkColumn(const std::vector<std::string>& column, std::string& inTableName);
 };
 
 
