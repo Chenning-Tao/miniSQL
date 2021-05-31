@@ -88,7 +88,14 @@ void Attribute::writeOut(char *&content) {
 void Attribute::checkInfo(std::vector<short> inType) {
     if (inType.size() != count + 1) throw string("Size doesn't match!");
     for(int i = 0; i < inType.size(); ++i){
+        if(inType[i] == -1 && type[i] == 0) continue;
         if(inType[i] != type[i]) throw string("Column " + to_string(i+1) + " doesn't match!");
+    }
+}
+
+void Attribute::getType(vector<short> &inType) {
+    for(int i = 0; i <= count; ++i){
+        inType.push_back(type[i]);
     }
 }
 
@@ -134,13 +141,16 @@ void Table::deleteTable(std::string deleteTableName) {
     index.erase(deleteTableName);
 }
 
-void Table::checkTable(std::string inTableName, std::vector<short> type) {
+vector<short> Table::checkTable(std::string inTableName, std::vector<short> type) {
+    vector<short> trueType;
     auto tableFind = index.find(inTableName);
     if(tableFind == index.end()) throw string("Table " + inTableName + " doesn't exist!");
     try{
         tableInfo[tableFind->second].checkInfo(std::move(type));
+        tableInfo[tableFind->second].getType(trueType);
     }
     catch (string error) {
         throw error;
     }
+    return trueType;
 }

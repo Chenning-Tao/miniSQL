@@ -49,14 +49,15 @@ bool API::dropTable(string tableName) {
 }
 
 bool API::insert(const string& tableName, const vector<short>& type, vector<string> content) {
+    vector<short> trueType;
     try {
-        TB->checkTable(tableName, type);
+        trueType = TB->checkTable(tableName, type);
     }
     catch (string error) {
         throw error;
     }
     try {
-        RM->insert(tableName, type, content);
+        RM->insert(tableName, trueType, content);
         printf("Success!\n");
     }
     catch (string error) {
