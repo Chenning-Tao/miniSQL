@@ -42,9 +42,13 @@ int Interpreter::interpret(string SQL) {
         }else if(type == "select") {
             smatch word;
             regex unconditional(R"(select[\s](.*)[\s]from[\s]([\w]+)[\s]?;)");
+            regex conditional(R"(select[\s](.*)[\s]from[\s]([\w]+)[\s]where[\s](.*);)");
             if (regex_match(SQL, word, unconditional)) {
-                select(word[1], word[2]);
-            } else printf("Syntax error near select!\n");
+                select(word[1], word[2], "");
+            } else if(regex_match(SQL, word, conditional)) {
+                select(word[1], word[2], word[3]);
+            }
+            else printf("Syntax error near select!\n");
         }else if(type == "execfile"){
             smatch filename;
             regex filenameRule(R"(execfile[\s]([\w.]+)[\s]?;)");
@@ -120,7 +124,7 @@ bool Interpreter::dropTable(string SQL) {
     }
 }
 
-bool Interpreter::insert(string tableName, string tableAttribute) {
+bool Interpreter::insert(const string& tableName, string tableAttribute) {
     tableAttribute.push_back(',');
     regex charRule("[\\s]?'(.*)'[\\s]?");
     regex intRule("[\\s]?([0-9]+)[\\s]?");
@@ -152,7 +156,7 @@ bool Interpreter::insert(string tableName, string tableAttribute) {
     api.insert(tableName, type, content);
 }
 
-bool Interpreter::select(string column, string tableName) {
+bool Interpreter::select(string column, string tableName, string condition) {
     column.push_back(',');
     char *split = strtok(column.data(), ",");
 
@@ -165,7 +169,23 @@ bool Interpreter::select(string column, string tableName) {
             Column.emplace_back(word[1]);
         split = strtok(nullptr, ",");
     }
-    api.select(Column, std::move(tableName));
+
+    if(condition.empty()) api.select(Column, std::move(tableName));
+    else{
+        condition += " and";
+        char *split = strtok(column.data(), "and");
+//
+//        smatch word;
+//        regex wordRule(R"([\s]?([\w*]+)[\s]?)");
+//        vector<string> Column;
+//        while(split != nullptr){
+//            string temp(split);
+//            if(regex_match(temp, word, wordRule))
+//                Column.emplace_back(word[1]);
+//            split = strtok(nullptr, ",");
+//        }
+//        regex operatorRule(R"([\s]?([\w]+)[\s]([><=]+)[\s]([\w'.])[\s]and[\s]?)");
+    }
 }
 
 bool Interpreter::execfile(const string &fileName) {

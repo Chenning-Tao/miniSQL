@@ -15,8 +15,8 @@ private:
     int createIndex(string SQL);
     bool dropTable(string SQL);
     bool dropIndex(string SQL);
-    bool insert(string tableName, string tableAttribute);
-    bool select(string column, string tableName);
+    bool insert(const string& tableName, string tableAttribute);
+    bool select(string column, string tableName, string condition);
     bool execfile(const string &fileName);
 public:
     API api;
