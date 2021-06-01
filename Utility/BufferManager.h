@@ -6,7 +6,7 @@
 #define MINISQL_BUFFERMANAGER_H
 #include "../CommonHead.h"
 
-#define POOL_SIZE 1024*1024
+#define POOL_SIZE 1024*256
 #define PAGE_SIZE 4096
 
 class Page{

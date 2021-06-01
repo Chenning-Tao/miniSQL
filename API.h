@@ -23,7 +23,7 @@ public:
     void initialize();
     bool dropTable(string tableName);
     bool insert(const string& tableName, const vector<short>& type, vector<string> content);
-    bool select(const vector<string>& column, string tableName);
+    bool select(const vector<string>& column, string tableName, vector<conditionPair> &CD);
 };
 
 #endif //MINISQL_API_H

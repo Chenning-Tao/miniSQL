@@ -46,13 +46,14 @@ bool Attribute::setPrimary(const string& inName) {
     }
     short temp = this->count;
     bool find = false;
-    for(short i = 0; i < temp; ++i){
+    for(short i = 0; i <= temp; ++i){
         if(inName == this->name[i]){
+            this->unique[i] = true;
             this->primary = i;
             find = true;
         }
     }
-    if(!find) cout << "Cannot find this key in this table!" << endl;
+    if(!find) printf("Cannot find this key in this table!\n");
     return find;
 }
 

@@ -195,15 +195,24 @@ bool Interpreter::select(string column, string tableName, string condition) {
                 regex floatRule("[0-9.]+");
                 smatch tempS;
                 string conditionTest = conditionS[3];
-                if(regex_match(conditionTest, tempS, charRule)) in.type = tempS[1].length();
-                else if(regex_match(conditionTest, intRule)) in.type = -1;
-                else if(regex_match(conditionTest, floatRule)) in.type = 0;
+                if(regex_match(conditionTest, tempS, charRule)) {
+                    in.type = tempS[1].length();
+                    in.condition = tempS[1];
+                }
+                else if(regex_match(conditionTest, intRule)) {
+                    in.type = -1;
+                    in.condition = conditionTest;
+                }
+                else if(regex_match(conditionTest, floatRule)) {
+                    in.type = 0;
+                    in.condition = conditionTest;
+                }
                 CD.emplace_back(in);
             }
             condition = condition.substr(find+3);
         }
     }
-    api.select(Column, std::move(tableName), CD);
+    return api.select(Column, std::move(tableName), CD);
 }
 
 bool Interpreter::execfile(const string &fileName) {

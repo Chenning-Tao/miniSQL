@@ -3,7 +3,6 @@
 //
 
 #include "API.h"
-
 #include <utility>
 
 bool API::createTable(const string& tableName, const Attribute& tableAttribute) {
@@ -19,9 +18,7 @@ bool API::createTable(const string& tableName, const Attribute& tableAttribute) 
     return true;
 }
 
-void API::initialize() {
-
-}
+void API::initialize() {}
 
 API::API() {
     BM = new BufferManager;
@@ -71,8 +68,9 @@ bool API::insert(const string& tableName, const vector<short>& type, vector<stri
 
     return true;
 }
+bool CD_CMP(const conditionPair& a, const conditionPair& b) {return a.order < b.order;};
 
-bool API::select(const vector<string> &column, string tableName) {
+bool API::select(const vector<string> &column, string tableName, vector<conditionPair> &CD) {
     // 无条件选择
     // todo: 选择某几列
     clock_t start, end;
@@ -90,6 +88,27 @@ bool API::select(const vector<string> &column, string tableName) {
 //    int separation;
     vector<short> type = TB->getType(tableName);
     vector<string> columnName = TB->getColumn(tableName);
+    // 判断条件是否正确
+    if(!CD.empty()){
+        for(int i = 0; i < CD.size(); ++i){
+            int pos = -1;
+            for(int j = 0; j < columnName.size(); ++j){
+                if(CD[i].columnName == columnName[j]) pos = j;
+            }
+            if(pos == -1){
+                printf("Column %s doesn't exist!\n", CD[i].columnName.data());
+                return false;
+            }
+            //if((type[pos] > 0 && type[pos] != CD[i].type)){
+            if(type[pos] != CD[i].type){
+                printf("Condition %d doesn't match!\n", i+1);
+                return false;
+            }
+            // 是第几个位置
+            CD[i].order = pos;
+        }
+    }
+    sort(CD.begin(), CD.end(), CD_CMP);
     // 打印表格标题
     tabulate::Table output;
     output.format().font_align(tabulate::FontAlign::center);
@@ -98,7 +117,8 @@ bool API::select(const vector<string> &column, string tableName) {
         output[0][i].set_text(columnName[i]);
     }
 //    RM->printTitle(columnName, type, separation);
-    int total = RM->select(tableName, type, output);
+    // 进行选择
+    int total = RM->select(tableName, type, output, CD);
     end = clock();
     printf("%d rows in the set!\n", total);
     printf("Success in %.3fs\n", (double )(end-start)/CLOCKS_PER_SEC);

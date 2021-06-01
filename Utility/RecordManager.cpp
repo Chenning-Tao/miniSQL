@@ -121,7 +121,8 @@ void RecordManager::dropTable(const string& tableName) {
     BM->flush();
 }
 
-void RecordManager::select(const string& tableName, const vector<short>& type, int separation) {
+int RecordManager::select(const string& tableName, const vector<short>& type,
+                          tabulate::Table &output, const vector<conditionPair>& CD) {
     vector<int> pageRecord;
     int recordSize, recordPerPage;
     initialHead(tableName, pageRecord, recordSize, recordPerPage);
@@ -134,11 +135,9 @@ void RecordManager::select(const string& tableName, const vector<short>& type, i
         record = BM->fetchPage(tableName, i);
         char *point = record.content;
         int freePointer = 0;
-        vector<vector<string>> result;
         int tempInt;
         float tempFloat;
         string tempString;
-        char *tempChar = new char[8];
 
         while(true){
             if(freePointer == 0){
@@ -149,33 +148,42 @@ void RecordManager::select(const string& tableName, const vector<short>& type, i
             else{
                 --count;
                 --freePointer;
-                ++resultCount;
+                bool flag = true;
                 vector<string> tempResult;
-                for(short cur:type){
-                    if(cur == -1){
+                for(int j = 0; j < type.size(); ++j){
+                    if(type[j] == -1){
                         charToOther(point, tempInt);
-                        sprintf(tempChar, "%-11d", tempInt);
-                        tempResult.emplace_back(tempChar);
+                        tempResult.emplace_back(to_string(tempInt));
                     }
-                    else if(cur == 0){
+                    else if(type[j] == 0){
                         charToOther(point, tempFloat);
-                        sprintf(tempChar, "%-7.4f", tempFloat);
-                        tempResult.emplace_back(tempChar);
+                        tempResult.emplace_back(to_string(tempFloat));
                     }
                     else {
-                        charToOther(point, tempString, cur);
-                        tempString.push_back(' ');
+                        charToOther(point, tempString, type[j]);
                         tempResult.emplace_back(tempString);
                         tempString.clear();
                     }
                 }
-                print(tempResult);
+                for(const auto & j : CD){
+                    flag = condition(j, tempResult[j.order]);
+                    if(!flag) break;
+                }
+
+                if(flag) {
+                    ++resultCount;
+                    addRowInit(output, type.size());
+                    for(int j = 0; j < tempResult.size(); ++j){
+                        output[resultCount][j].set_text(tempResult[j]);
+                    }
+                }
+//                print(tempResult);
             }
             if(count == 0) break;
         }
     }
-    print(separation);
-    printf("%d rows in set.\n", resultCount);
+//    print(separation);
+    return resultCount;
 }
 
 void RecordManager::print(const vector<string> &result) {
