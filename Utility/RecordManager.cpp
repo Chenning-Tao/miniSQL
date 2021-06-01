@@ -150,17 +150,17 @@ int RecordManager::select(const string& tableName, const vector<short>& type,
                 --freePointer;
                 bool flag = true;
                 vector<string> tempResult;
-                for(int j = 0; j < type.size(); ++j){
-                    if(type[j] == -1){
+                for(short j : type){
+                    if(j == -1){
                         charToOther(point, tempInt);
                         tempResult.emplace_back(to_string(tempInt));
                     }
-                    else if(type[j] == 0){
+                    else if(j == 0){
                         charToOther(point, tempFloat);
                         tempResult.emplace_back(to_string(tempFloat));
                     }
                     else {
-                        charToOther(point, tempString, type[j]);
+                        charToOther(point, tempString, j);
                         tempResult.emplace_back(tempString);
                         tempString.clear();
                     }

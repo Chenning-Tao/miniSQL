@@ -120,6 +120,12 @@ void Attribute::getColumn(vector<std::string> &Column) {
     }
 }
 
+void Attribute::getUnique(vector<bool> &Unique) {
+    for(int i = 0; i <= count; ++i){
+        Unique.push_back(unique[i]);
+    }
+}
+
 Table::Table(BufferManager *inBM) {
     this->BM = inBM;
 }
@@ -198,5 +204,13 @@ vector<string> Table::getColumn(const string &inTableName) {
     if(tableFind == index.end()) throw string("Table " + inTableName + " doesn't exist!");
     vector<string> result;
     tableInfo[tableFind->second].getColumn(result);
+    return result;
+}
+
+std::vector<bool> Table::getUnique(const string &inTableName) {
+    auto tableFind = index.find(inTableName);
+    if(tableFind == index.end()) throw string("Table " + inTableName + " doesn't exist!");
+    vector<bool> result;
+    tableInfo[tableFind->second].getUnique(result);
     return result;
 }

@@ -56,6 +56,7 @@ bool API::insert(const string& tableName, const vector<short>& type, vector<stri
         return false;
     }
     vector<short> trueType = TB->getType(tableName);
+    vector<bool> Unique = TB->getUnique(tableName);
     try {
         RM->insert(tableName, trueType, content);
         end = clock();
