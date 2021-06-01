@@ -12,8 +12,8 @@ using namespace std;
 class Interpreter {
 private:
     int createTable(string SQL);
-    int createIndex(string SQL);
-    bool dropTable(string SQL);
+    int createIndex(const string& SQL);
+    bool dropTable(const string& SQL);
     bool dropIndex(string SQL);
     bool insert(const string& tableName, string tableAttribute);
     bool select(string column, string tableName, string condition);

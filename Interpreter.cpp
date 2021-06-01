@@ -105,11 +105,11 @@ int Interpreter::createTable(string SQL) {
     return 1;
 }
 
-int Interpreter::createIndex(string SQL){
-
+int Interpreter::createIndex(const string& SQL){
+    return 0;
 }
 
-bool Interpreter::dropTable(string SQL) {
+bool Interpreter::dropTable(const string& SQL) {
     regex Word("([\\w]+)[\\s]?;");
     smatch tableNameMatch;
     // 获得table的名字

@@ -22,7 +22,6 @@ int BufferManager::blockNum(const std::string& fileName) {
         fclose(f);
         return int(length/PAGE_SIZE);
     }
-
 }
 
 pageInfo BufferManager::fetchPage(std::string fileName, int blockID) {
