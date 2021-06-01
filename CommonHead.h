@@ -32,4 +32,11 @@ inline void addRowInit(tabulate::Table &output, const int& column){
     }
 };
 
+typedef struct conditionPair{
+    std::string columnName;
+    operatorSet OP;
+    std::string condition;
+    short type;
+}conditionPair;
+
 #endif //MINISQL_COMMONHEAD_H

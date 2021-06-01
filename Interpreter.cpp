@@ -3,7 +3,6 @@
 //
 
 #include "Interpreter.h"
-
 #include <utility>
 
 int Interpreter::interpret(string SQL) {
@@ -170,22 +169,41 @@ bool Interpreter::select(string column, string tableName, string condition) {
         split = strtok(nullptr, ",");
     }
 
-    if(condition.empty()) api.select(Column, std::move(tableName));
-    else{
+    vector<conditionPair> CD;
+    if(!condition.empty()){
         condition += " and";
-        char *split = strtok(column.data(), "and");
-//
-//        smatch word;
-//        regex wordRule(R"([\s]?([\w*]+)[\s]?)");
-//        vector<string> Column;
-//        while(split != nullptr){
-//            string temp(split);
-//            if(regex_match(temp, word, wordRule))
-//                Column.emplace_back(word[1]);
-//            split = strtok(nullptr, ",");
-//        }
-//        regex operatorRule(R"([\s]?([\w]+)[\s]([><=]+)[\s]([\w'.])[\s]and[\s]?)");
+        smatch conditionS;
+        regex operatorRule(R"([\s]?([\w]+)[\s]?([><=]+)[\s]?([\w'.]+)[\s]?)");
+        while(condition.find("and") != string::npos){
+            int find = condition.find("and");
+            string temp = condition.substr(0, find);
+            if(regex_match(temp, conditionS, operatorRule)){
+                conditionPair in;
+                in.columnName = conditionS[1];
+                if(conditionS[2] == ">") in.OP = Greater;
+                else if(conditionS[2] == "<") in.OP = Less;
+                else if(conditionS[2] == "=") in.OP = Equal;
+                else if(conditionS[2] == "<>") in.OP = NotEqual;
+                else if(conditionS[2] == ">=") in.OP = GreaterEqual;
+                else if(conditionS[2] == "<=") in.OP = LessEqual;
+                else {
+                    cout << "Invalid operator " << conditionS[2] << endl;
+                    return false;
+                }
+                regex charRule(R"([']([\w]+)['])");
+                regex intRule("[0-9]+");
+                regex floatRule("[0-9.]+");
+                smatch tempS;
+                string conditionTest = conditionS[3];
+                if(regex_match(conditionTest, tempS, charRule)) in.type = tempS[1].length();
+                else if(regex_match(conditionTest, intRule)) in.type = -1;
+                else if(regex_match(conditionTest, floatRule)) in.type = 0;
+                CD.emplace_back(in);
+            }
+            condition = condition.substr(find+3);
+        }
     }
+    api.select(Column, std::move(tableName), CD);
 }
 
 bool Interpreter::execfile(const string &fileName) {
