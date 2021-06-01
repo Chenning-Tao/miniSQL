@@ -222,19 +222,19 @@ bool Interpreter::execfile(const string &fileName) {
         printf("File doesn't exist!\n");
         return false;
     }
+    clock_t start, end;
+    start = clock();
     string SQL, line;
     while (!file.eof()) {
         getline(file, line);
         SQL += line;
         if(line.find(';') != std::string::npos){
-            clock_t start, end;
-            start = clock();
             printf("miniSQL>  %s\n", SQL.data());
             interpret(SQL);
-            end = clock();
-            printf(" in %.3fs.\n", double (end-start)/CLOCKS_PER_SEC);
             SQL = "";
         }
     }
+    end = clock();
+    printf("Success in %.3fs.\n", double (end - start)/CLOCKS_PER_SEC);
     file.close();
 }

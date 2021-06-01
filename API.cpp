@@ -35,7 +35,7 @@ API::~API() {
 bool API::dropTable(string tableName) {
     try {
         CM->dropTable(tableName);
-        printf("Success");
+        printf("Success!\n");
     }
     catch (const char *error) {
         printf("%s\n", error);
@@ -58,7 +58,7 @@ bool API::insert(const string& tableName, const vector<short>& type, vector<stri
     vector<short> trueType = TB->getType(tableName);
     vector<bool> Unique = TB->getUnique(tableName);
     try {
-        RM->insert(tableName, trueType, content);
+        RM->insert(tableName, trueType, content, Unique);
         end = clock();
         printf("Success in %.3fs\n", double(end-start)/CLOCKS_PER_SEC);
     }

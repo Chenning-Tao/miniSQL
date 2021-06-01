@@ -61,7 +61,7 @@ private:
     };
 public:
     RecordManager(BufferManager *inBM, CatalogManager *inCM, Table *inTB);
-    void insert(const string& tableName, vector<short> type, vector<string> content);
+    void insert(const string& tableName, const vector<short> &type, vector<string>& content, const vector<bool>& unique);
     void createTable(const string& tableName, Attribute tableInfo);
     void dropTable(const string& tableName);
     int select(const string& tableName, const vector<short>& type, tabulate::Table &output, const vector<conditionPair> &CD);

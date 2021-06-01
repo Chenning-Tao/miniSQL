@@ -4,19 +4,75 @@
 
 #include "RecordManager.h"
 
-void RecordManager::insert(const string& tableName, vector<short> type, vector<string> content) {
+void RecordManager::insert(const string& tableName, const vector<short> &type, vector<string>& content, const vector<bool>& unique) {
     string infoFile = tableName + "_INFO";
     vector<int> pageRecord;
     int recordSize, recordPerPage;
     initialHead(tableName, pageRecord, recordSize, recordPerPage);
 
-    int i = 0;
-    for(; i < pageRecord.size(); ++i){
-        if(recordPerPage > pageRecord[i]) break;
+    bool uniqueFlag = false;
+    for(bool cur:unique){
+        if(cur) {
+            uniqueFlag = true;
+            break;
+        }
+    }
+
+    int insertPage = -1;
+    if(uniqueFlag) {
+        // 判断是否有重复的
+        pageInfo record;
+        int count;
+        for (int i = 0; i < pageRecord.size(); ++i) {
+            if(pageRecord[i] != recordPerPage && insertPage == -1) {
+                insertPage = i;
+            }
+
+            count = pageRecord[i];
+            record = BM->fetchPage(tableName, i);
+            char *point = record.content;
+            int freePointer = 0;
+            int tempInt;
+            float tempFloat;
+            string tempString;
+
+            while (true) {
+                if (freePointer == 0) {
+                    charToOther(point, freePointer);
+                    point -= 4;
+                    point += recordSize;
+                } else {
+                    --count;
+                    --freePointer;
+                    for (int j = 0; j < type.size(); ++j) {
+                        if (type[j] == -1) {
+                            charToOther(point, tempInt);
+                            if (unique[j]) if (to_string(tempInt) == content[j]) throw string("Duplited key!");
+                        } else if (type[j] == 0) {
+                            charToOther(point, tempFloat);
+                            if (unique[j]) if (to_string(tempFloat) == content[j]) throw string("Duplited key!");
+                        } else {
+                            charToOther(point, tempString, type[j]);
+                            if (unique[j]) if (tempString == content[j]) throw string("Duplited key!");
+                            tempString.clear();
+                        }
+                    }
+
+                }
+                if (count == 0) break;
+            }
+        }
+    }
+
+    if(insertPage == -1) {
+        insertPage = 0;
+        for (; insertPage < pageRecord.size(); ++insertPage) {
+            if (recordPerPage > pageRecord[insertPage]) break;
+        }
     }
 
     int updateNum;
-    if(i == pageRecord.size()){
+    if(insertPage == pageRecord.size()){
         // 需要添加新的一个page
         pageInfo infoHead = BM->fetchPage(infoFile, 0);
         char *point = infoHead.content;
@@ -24,10 +80,10 @@ void RecordManager::insert(const string& tableName, vector<short> type, vector<s
         BM->changeComplete(infoFile, 0);
         updateNum = 1;
     }
-    else updateNum = pageRecord[i] + 1;
+    else updateNum = pageRecord[insertPage] + 1;
 
-    int blockID = i / (PAGE_SIZE / 4) + 1;
-    int offset = i - ((blockID-1) * PAGE_SIZE / 4);
+    int blockID = insertPage / (PAGE_SIZE / 4) + 1;
+    int offset = insertPage - ((blockID-1) * PAGE_SIZE / 4);
     pageInfo info = BM->fetchPage(infoFile, blockID);
     char *point = info.content;
     point += (offset * 4);
@@ -37,7 +93,7 @@ void RecordManager::insert(const string& tableName, vector<short> type, vector<s
     // todo: 使用空闲指针，需要解决一条记录<4的问题
 
     // 找到需要插入的位置 i是需要插入的page位置
-    pageInfo insert = BM->fetchPage(tableName, i);
+    pageInfo insert = BM->fetchPage(tableName, insertPage);
     point = insert.content;
     // 获取空闲指针
     int freePointer, freePointerNext, freePointerUpdate;
@@ -58,7 +114,7 @@ void RecordManager::insert(const string& tableName, vector<short> type, vector<s
     freePointerUpdate = freePointer + freePointerNext + 1;
     point = insert.content;
     otherToChar(freePointerUpdate, point);
-    BM->changeComplete(tableName, i);
+    BM->changeComplete(tableName, insertPage);
 }
 
 RecordManager::RecordManager(BufferManager *inBM, CatalogManager *inCM, Table *inTB){
