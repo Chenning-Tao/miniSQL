@@ -97,10 +97,18 @@ void BufferManager::flush() {
     }
     std::vector<int>().swap(dirtyPage);
     for(std::string cur : deleteList){
-        auto getID = index.find(cur);
-        if(getID != index.end()) {
-            bufferPool[getID->second].makeFree();
-            index.erase(getID);
+        int i = 0;
+        std::string temp = cur + std::to_string(i);
+        auto getID = index.find(temp);
+
+        while(getID != index.end()) {
+            if (getID != index.end()) {
+                bufferPool[getID->second].makeFree();
+                index.erase(getID);
+            }
+            ++i;
+            temp = cur + std::to_string(i);
+            getID = index.find(temp);
         }
         remove(cur.data());
     }
@@ -147,6 +155,7 @@ pageInfo Page::initialize(std::string newName, int newBlockID) {
     blockID = newBlockID;
     free = false;
     pageInfo newPage;
+    memset(content, '\0', PAGE_SIZE);
     newPage.content = content;
     newPage.blockID = newBlockID;
     // 没啥用
