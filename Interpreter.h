@@ -15,7 +15,7 @@ private:
     int createTable(string SQL);
     int createIndex(const string& SQL);
     bool dropTable(const string& SQL);
-    bool dropIndex(string SQL);
+    bool dropIndex(const string& SQL);
     bool insert(const string& tableName, string tableAttribute);
     bool SelectDelete(string column, string tableName, string condition, int mode);
     bool execfile(const string &fileName);

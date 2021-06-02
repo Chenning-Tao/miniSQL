@@ -26,6 +26,10 @@ int Interpreter::interpret(string SQL) {
             // drop table
             if(regex_search(SQL, dropWord, dropTable))
                 return this->dropTable(SQL.substr(dropWord[0].length()));
+            else if(regex_search(SQL, dropWord, dropIndex)){
+                return this->dropIndex(SQL.substr(dropWord[0].length()));
+            }
+            else printf("Syntax error near drop!\n");
         }else if(type == "create"){
             smatch dropWord;    // 用来将前面这一段去掉
             regex createTable("create[\\s]table[\\s]");
@@ -34,8 +38,7 @@ int Interpreter::interpret(string SQL) {
                 return this->createIndex(SQL.substr(dropWord[0].length()));
             else if(regex_search(SQL, dropWord, createTable))
                 return this->createTable(SQL.substr(dropWord[0].length()));
-            else
-                cout << "Syntax error near create!" << endl;
+            else printf("Syntax error near create!\n");
         }else if(type == "delete"){
             smatch word;
             regex unconditional(R"(delete[\s]from[\s]([\w]+)[\s]?;)");
@@ -114,7 +117,15 @@ int Interpreter::createTable(string SQL) {
 }
 
 int Interpreter::createIndex(const string& SQL){
-    return 0;
+    regex IndexRule(R"([\s]?([\w]+)[\s]on[\s]([\w]+)[\s]?[\(]([\w]+)[\)][\s]?;)");
+    smatch Word;
+    if(regex_match(SQL, Word, IndexRule)){
+        return api.createIndex(Word[1], Word[2], Word[3]);
+    }
+    else{
+        printf("Syntax error near create index!\n");
+        return 0;
+    }
 }
 
 bool Interpreter::dropTable(const string& SQL) {
@@ -247,4 +258,16 @@ bool Interpreter::execfile(const string &fileName) {
     end = clock();
     printf("Success in %.3fs.\n", double (end - start)/CLOCKS_PER_SEC);
     file.close();
+}
+
+bool Interpreter::dropIndex(const string& SQL) {
+    regex IndexRule(R"([\s]?([\w]+)[\s]on[\s]([\w]+)[\s]?;)");
+    smatch Word;
+    if(regex_match(SQL, Word, IndexRule)){
+        return api.dropIndex(Word[1], Word[2]);
+    }
+    else{
+        printf("Syntax error near drop index!\n");
+        return 0;
+    }
 }
