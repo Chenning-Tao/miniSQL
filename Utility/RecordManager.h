@@ -21,8 +21,6 @@ using namespace std;
 class RecordManager {
 private:
     BufferManager *BM;
-    CatalogManager *CM;
-    Table *TB;
     void initialHead(const string& tableName, vector<int> &pageRecord, int &recordSize, int &recordPerPage);
     inline bool condition(const conditionPair& CD, const string& value){
         if(CD.type > 0){
@@ -60,8 +58,9 @@ private:
         }
     };
 public:
-    RecordManager(BufferManager *inBM, CatalogManager *inCM, Table *inTB);
+    RecordManager(BufferManager *inBM);
     void insert(const string& tableName, const vector<short> &type, vector<string>& content, const vector<bool>& unique);
+    void Delete(const string& tableName, const vector<short> &type, const vector<conditionPair> &CD);
     void createTable(const string& tableName, Attribute tableInfo);
     void dropTable(const string& tableName);
     int select(const string& tableName, const vector<short>& type, tabulate::Table &output, const vector<conditionPair> &CD);

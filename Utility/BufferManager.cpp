@@ -68,7 +68,14 @@ void BufferManager::changeComplete(const std::string& fileName, int blockID) {
     auto bufferID = index.find(indexFind);
     bufferPool[bufferID->second].makeDirty();
     bufferPool[bufferID->second].unPinPage();
-    dirtyPage.push_back(bufferID->second);
+    bool already = false;
+    for(int cur : dirtyPage){
+        if (bufferID->second == cur) {
+            already = true;
+            break;
+        }
+    }
+    if(!already) dirtyPage.push_back(bufferID->second);
 }
 
 BufferManager::~BufferManager() {
@@ -87,8 +94,7 @@ void BufferManager::deletePage(const std::string& fileName, int blockID) {
 }
 
 void BufferManager::deleteFile(const std::string& fileName) {
-    std::string filePath = DatabasePath + fileName;
-    deleteList.push_back(filePath);
+    deleteList.push_back(fileName);
 }
 
 void BufferManager::flush() {
@@ -110,7 +116,8 @@ void BufferManager::flush() {
             temp = cur + std::to_string(i);
             getID = index.find(temp);
         }
-        remove(cur.data());
+        std::string fileName = DatabasePath + cur;
+        remove(fileName.data());
     }
     std::vector<std::string>().swap(deleteList);
 }
@@ -155,7 +162,7 @@ pageInfo Page::initialize(std::string newName, int newBlockID) {
     blockID = newBlockID;
     free = false;
     pageInfo newPage;
-    memset(content, '\0', PAGE_SIZE);
+    memset(this->content, '\0', PAGE_SIZE);
     newPage.content = content;
     newPage.blockID = newBlockID;
     // 没啥用

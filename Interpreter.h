@@ -7,6 +7,7 @@
 #include "CommonHead.h"
 #include "API.h"
 #include "Utility/Table.h"
+
 using namespace std;
 
 class Interpreter {
@@ -16,7 +17,7 @@ private:
     bool dropTable(const string& SQL);
     bool dropIndex(string SQL);
     bool insert(const string& tableName, string tableAttribute);
-    bool select(string column, string tableName, string condition);
+    bool SelectDelete(string column, string tableName, string condition, int mode);
     bool execfile(const string &fileName);
 public:
     API api;

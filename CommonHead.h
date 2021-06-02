@@ -17,6 +17,8 @@
 #include <ctime>
 #include <fstream>
 #include "./Utility/tabulate.hpp"
+#define SELECT 1
+#define DELETE 2
 
 typedef struct pageInfo{
     char *content;

@@ -24,7 +24,7 @@ API::API() {
     BM = new BufferManager;
     TB = new Table(BM);
     CM = new CatalogManager(BM, TB);
-    RM = new RecordManager(BM, CM, TB);
+    RM = new RecordManager(BM);
 }
 
 API::~API() {
@@ -71,7 +71,7 @@ bool API::insert(const string& tableName, const vector<short>& type, vector<stri
 }
 bool CD_CMP(const conditionPair& a, const conditionPair& b) {return a.order < b.order;};
 
-bool API::select(const vector<string> &column, string tableName, vector<conditionPair> &CD) {
+bool API::SelectDelete(const vector<string> &column, string tableName, vector<conditionPair> &CD, int mode) {
     // 无条件选择
     // todo: 选择某几列
     clock_t start, end;
@@ -110,35 +110,44 @@ bool API::select(const vector<string> &column, string tableName, vector<conditio
         }
     }
     sort(CD.begin(), CD.end(), CD_CMP);
-    // 打印表格标题
-    tabulate::Table output;
-    output.format().font_align(tabulate::FontAlign::center);
-    addRowInit(output, columnName.size());
-    for(int i = 0; i < columnName.size(); ++i){
-        output[0][i].set_text(columnName[i]);
-    }
-//    RM->printTitle(columnName, type, separation);
-    // 进行选择
-    int total = RM->select(tableName, type, output, CD);
-    end = clock();
-    printf("%d rows in the set!\n", total);
-    printf("Success in %.3fs\n", (double )(end-start)/CLOCKS_PER_SEC);
-    printf("Start output formatting!\n");
-    // 调整内容显示
-    output[0].format()
-            .font_color(tabulate::Color::yellow)
-            .font_align(tabulate::FontAlign::center)
-            .font_style({tabulate::FontStyle::bold});
-    if(total > 1) {
-        for (int i = 2; i < total; ++i) {
-            output[i].format()
-                    .hide_border_bottom()
-                    .hide_border_top();
+    if(mode == SELECT) {
+        // 打印表格标题
+        tabulate::Table output;
+        output.format().font_align(tabulate::FontAlign::center);
+        addRowInit(output, columnName.size());
+        for (int i = 0; i < columnName.size(); ++i) {
+            output[0][i].set_text(columnName[i]);
         }
-        output[1].format().hide_border_bottom();
-        output[total].format().hide_border_top();
+//    RM->printTitle(columnName, type, separation);
+        // 进行选择
+        int total = RM->select(tableName, type, output, CD);
+        end = clock();
+        printf("%d rows in the set!\n", total);
+        printf("Success in %.3fs\n", (double) (end - start) / CLOCKS_PER_SEC);
+        if(total == 0) return true;
+        printf("Start output formatting!\n");
+        // 调整内容显示
+        output[0].format()
+                .font_color(tabulate::Color::yellow)
+                .font_align(tabulate::FontAlign::center)
+                .font_style({tabulate::FontStyle::bold});
+        if (total > 1) {
+            for (int i = 2; i < total; ++i) {
+                output[i].format()
+                        .hide_border_bottom()
+                        .hide_border_top();
+            }
+            output[1].format().hide_border_bottom();
+            output[total].format().hide_border_top();
+        }
+        cout << output << endl;
+        printf("%d rows in the set!\n", total);
     }
-    cout << output << endl;
-    printf("%d rows in the set!\n", total);
+    else if(mode == DELETE){
+        end = clock();
+        RM->Delete(tableName, type, CD);
+        printf("Success in %.3fs\n", (double)(end - start)/CLOCKS_PER_SEC);
+    }
 
+    return true;
 }

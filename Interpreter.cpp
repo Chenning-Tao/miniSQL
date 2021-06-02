@@ -37,15 +37,23 @@ int Interpreter::interpret(string SQL) {
             else
                 cout << "Syntax error near create!" << endl;
         }else if(type == "delete"){
-
+            smatch word;
+            regex unconditional(R"(delete[\s]from[\s]([\w]+)[\s]?;)");
+            regex conditional(R"(delete[\s]from[\s]([\w]+)[\s]where[\s](.*);)");
+            if (regex_match(SQL, word, unconditional)) {
+                SelectDelete("", word[1], "", DELETE);
+            } else if(regex_match(SQL, word, conditional)) {
+                SelectDelete("", word[1], word[2], DELETE);
+            }
+            else printf("Syntax error near delete!\n");
         }else if(type == "select") {
             smatch word;
             regex unconditional(R"(select[\s](.*)[\s]from[\s]([\w]+)[\s]?;)");
             regex conditional(R"(select[\s](.*)[\s]from[\s]([\w]+)[\s]where[\s](.*);)");
             if (regex_match(SQL, word, unconditional)) {
-                select(word[1], word[2], "");
+                SelectDelete(word[1], word[2], "", SELECT);
             } else if(regex_match(SQL, word, conditional)) {
-                select(word[1], word[2], word[3]);
+                SelectDelete(word[1], word[2], word[3], SELECT);
             }
             else printf("Syntax error near select!\n");
         }else if(type == "execfile"){
@@ -155,19 +163,21 @@ bool Interpreter::insert(const string& tableName, string tableAttribute) {
     api.insert(tableName, type, content);
 }
 
-bool Interpreter::select(string column, string tableName, string condition) {
-    column.push_back(',');
-    char *split = strtok(column.data(), ",");
-
-    smatch word;
-    regex wordRule(R"([\s]?([\w*]+)[\s]?)");
+bool Interpreter::SelectDelete(string column, string tableName, string condition, int mode) {
+//    column.push_back(',');
+//    char *split = strtok(column.data(), ",");
+//
+//    smatch word;
+//    regex wordRule(R"([\s]?([\w*]+)[\s]?)");
+//    vector<string> Column;
+//    while(split != nullptr){
+//        string temp(split);
+//        if(regex_match(temp, word, wordRule))
+//            Column.emplace_back(word[1]);
+//        split = strtok(nullptr, ",");
+//    }
     vector<string> Column;
-    while(split != nullptr){
-        string temp(split);
-        if(regex_match(temp, word, wordRule))
-            Column.emplace_back(word[1]);
-        split = strtok(nullptr, ",");
-    }
+    Column.emplace_back("*");
 
     vector<conditionPair> CD;
     if(!condition.empty()){
@@ -212,7 +222,7 @@ bool Interpreter::select(string column, string tableName, string condition) {
             condition = condition.substr(find+3);
         }
     }
-    return api.select(Column, std::move(tableName), CD);
+    return api.SelectDelete(Column, std::move(tableName), CD, mode);
 }
 
 bool Interpreter::execfile(const string &fileName) {
