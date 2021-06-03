@@ -79,12 +79,13 @@ void BufferManager::changeComplete(const std::string& fileName, int blockID) {
 }
 
 BufferManager::~BufferManager() {
-    for(int cur : dirtyPage){
-        bufferPool[cur].pageWrite();
-    }
-    for(std::string cur : deleteList){
-        remove(cur.data());
-    }
+//    for(int cur : dirtyPage){
+//        bufferPool[cur].pageWrite();
+//    }
+//    for(std::string cur : deleteList){
+//        remove(cur.data());
+//    }
+    flush();
 }
 
 void BufferManager::deletePage(const std::string& fileName, int blockID) {

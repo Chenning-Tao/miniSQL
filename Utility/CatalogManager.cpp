@@ -21,7 +21,7 @@ void CatalogManager::createTable(string tableName, Attribute tableAttribute) {
     * table的存储方式:
     * tableName 256位
     * count(告诉有多少个) primary跟在后面(获得位置)
-    * 64位存name，4位存type，2位存unique和index
+    * 32位存name，4位存type，2位存unique和index, 32位存indexName
     */
     char *cur = newPage.content;
     otherToChar(tableName, cur, 256);
@@ -87,8 +87,22 @@ CatalogManager::~CatalogManager() {
 
     // 存在的
     otherToChar(usedSize, used);
-    for(int i = 0; i < usedSize; ++i)
+    for(int i = 0; i < usedSize; ++i) {
+        pageInfo newPage = BM->fetchPage("Catalog", tablePointer[i]);
+        /*
+        * table的存储方式:
+        * tableName 256位
+        * count(告诉有多少个) primary跟在后面(获得位置)
+        * 32位存name，4位存type，2位存unique和index, 32位存indexName
+        */
+        char *cur = newPage.content;
+        string tableName;
+        charToOther(cur, tableName, 256);
+        auto tableFind = TB->index.find(tableName);
+        TB->tableInfo[tableFind->second].writeOut(cur);
+        BM->changeComplete("Catalog", tablePointer[i]);
         otherToChar(tablePointer[i], used);
+    }
     // 空闲的
     otherToChar(unusedSize, unused);
     otherToChar(last, unused);
@@ -98,7 +112,6 @@ CatalogManager::~CatalogManager() {
     }
     BM->changeComplete("Catalog", 0);
     delete TB;
-    delete BM;
 }
 
 void CatalogManager::dropTable(string tableName) {

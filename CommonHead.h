@@ -16,6 +16,8 @@
 #include <utility>
 #include <ctime>
 #include <fstream>
+#include <set>
+#include <unordered_set>
 #include "./Utility/tabulate.hpp"
 #define SELECT 1
 #define DELETE 2
@@ -24,6 +26,11 @@ typedef struct pageInfo{
     char *content;
     int blockID;
 }pageInfo;
+
+typedef struct RecordLocation{
+    int page;
+    int offset;
+}RecordLocation;
 
 enum operatorSet {Greater, Less, LessEqual, GreaterEqual, Equal, NotEqual};
 

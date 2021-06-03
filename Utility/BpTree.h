@@ -5,17 +5,13 @@
 #ifndef MINISQL_BPTREE_H
 #define MINISQL_BPTREE_H
 #include "../CommonHead.h"
+using namespace std;
 
-class Node{
+class indexNode{
 public:
+    unordered_set<string> key;
+    short type;
 private:
-};
-
-class Root : Node{
-
-};
-
-class BpTree {
 
 };
 

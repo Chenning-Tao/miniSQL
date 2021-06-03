@@ -8,6 +8,9 @@
 bool API::createTable(const string& tableName, const Attribute& tableAttribute) {
     try {
         CM->createTable(tableName, tableAttribute);
+        short primary = TB->getPrimary(tableName);
+        vector<short> type = TB->getType(tableName);
+        if(primary != -1) IM->createIndex(tableName, primary, type[primary]);
         printf("Success!\n");
     }
     catch (const char *error) {
@@ -25,20 +28,29 @@ API::API() {
     TB = new Table(BM);
     CM = new CatalogManager(BM, TB);
     RM = new RecordManager(BM);
+    IM = new IndexManager(BM, TB);
 }
 
 API::~API() {
     delete RM;
     delete CM;
+    delete IM;
+    delete BM;
 }
 
-bool API::dropTable(string tableName) {
+bool API::dropTable(const string& tableName) {
     try {
+        vector<bool> index = TB->getIndex(tableName);
+        for(int i = 0; i < index.size(); ++i){
+            if(index[i]){
+                IM->dropIndex(tableName, i);
+            }
+        }
         CM->dropTable(tableName);
         printf("Success!\n");
     }
-    catch (const char *error) {
-        printf("%s\n", error);
+    catch (string *error) {
+        printf("%s\n", error->data());
         return false;
     }
     RM->dropTable(tableName);
@@ -57,7 +69,15 @@ bool API::insert(const string& tableName, const vector<short>& type, vector<stri
     }
     vector<short> trueType = TB->getType(tableName);
     vector<bool> Unique = TB->getUnique(tableName);
+    vector<bool> Index = TB->getIndex(tableName);
     try {
+        for(int i = 0; i < Index.size(); ++i){
+            if(Index[i]){
+                if(IM->findKey(tableName, i, content[i])) throw string("Duplicated key!");
+                else IM->insertKey(tableName, i, content[i]);
+                Unique[i] = false;
+            }
+        }
         RM->insert(tableName, trueType, content, Unique);
         end = clock();
         printf("Success in %.3fs\n", double(end-start)/CLOCKS_PER_SEC);
@@ -150,4 +170,30 @@ bool API::SelectDelete(const vector<string> &column, string tableName, vector<co
     }
 
     return true;
+}
+
+bool API::createIndex(const string& indexName, const string& tableName, const string& columnName) {
+    int i;
+    try {
+        i = TB->setIndex(tableName, columnName, indexName);
+        vector<short> Type = TB->getType(tableName);
+        IM->createIndex(tableName, i, Type[i]);
+    }
+    catch (string error){
+        printf("%s\n", error.data());
+    }
+
+}
+
+bool API::dropIndex(const string &indexName, const string& tableName) {
+    int i;
+    try {
+        i = TB->deleteIndex(tableName, indexName);
+        IM->dropIndex(tableName, i);
+        printf("Success!\n");
+    }
+    catch (string error){
+        printf("%s\n", error.data());
+    }
+    return false;
 }

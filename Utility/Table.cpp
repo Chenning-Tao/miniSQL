@@ -14,6 +14,7 @@ void Attribute::setInt(string inName, bool Unique) {
     this->unique[temp] = Unique;
     this->type[temp] = -1;
     this->index[temp] = false;
+    this->indexName[temp] = ",";
 }
 
 void Attribute::setChar(string inName, short length, bool Unique) {
@@ -23,6 +24,7 @@ void Attribute::setChar(string inName, short length, bool Unique) {
     this->unique[temp] = Unique;
     this->type[temp] = length;
     this->index[temp] = false;
+    this->indexName[temp] = ",";
 }
 
 Attribute::Attribute() {
@@ -37,6 +39,7 @@ void Attribute::setFloat(string inName, bool Unique) {
     this->unique[temp] = Unique;
     this->type[temp] = 0;
     this->index[temp] = false;
+    this->indexName[temp] = ",";
 }
 
 bool Attribute::setPrimary(const string& inName) {
@@ -57,32 +60,30 @@ bool Attribute::setPrimary(const string& inName) {
     return find;
 }
 
-short Attribute::attributeNum() const {
-    return short(count+1);
-}
-
 void Attribute::readIn(char *&content) {
     charToOther(content, count);
     charToOther(content, primary);
     cout << "Primary key:" << primary << endl;
-    for(int i = 0; i < count; ++i){
-        charToOther(content, name[i], 64);
+    for(int i = 0; i <= count; ++i){
+        charToOther(content, name[i], 32);
         charToOther(content, type[i]);
         charToOther(content, unique[i]);
         charToOther(content, index[i]);
-        cout << name[i] << " " << type[i] << " " << unique[i] << " " << index[i] << endl;
+        charToOther(content, indexName[i], 32);
+        if(!index[i]) indexName[i] = ",";
+        cout << name[i] << " " << indexName[i] << " " << type[i] << " " << unique[i] << " " << index[i] << endl;
     }
-    count -= 1;
 }
 
 void Attribute::writeOut(char *&content) {
-    otherToChar(short(count+1), content);
+    otherToChar(short(count), content);
     otherToChar(primary, content);
     for(int i = 0; i <= count; ++i){
-        otherToChar(name[i], content, 64);
+        otherToChar(name[i], content, 32);
         otherToChar(type[i], content);
         otherToChar(unique[i], content);
         otherToChar(index[i], content);
+        otherToChar(indexName[i], content, 32);
     }
 }
 
@@ -126,6 +127,18 @@ void Attribute::getUnique(vector<bool> &Unique) {
     }
 }
 
+void Attribute::getIndexName(vector<std::string> &IndexName) {
+    for(int i = 0; i <= count; ++i){
+        IndexName.push_back(indexName[i]);
+    }
+}
+
+void Attribute::getIndex(std::vector<bool> &Index) {
+    for(int i = 0; i <= count; ++i){
+        Index.push_back(index[i]);
+    }
+}
+
 Table::Table(BufferManager *inBM) {
     this->BM = inBM;
 }
@@ -165,7 +178,7 @@ void Table::addNew(const std::string& inTableName, const Attribute& inTableInfo,
     index.emplace(inTableName, tableName.size() - 1);
 }
 
-void Table::deleteTable(std::string deleteTableName) {
+void Table::deleteTable(const std::string& deleteTableName) {
     index.erase(deleteTableName);
 }
 
@@ -214,3 +227,70 @@ std::vector<bool> Table::getUnique(const string &inTableName) {
     tableInfo[tableFind->second].getUnique(result);
     return result;
 }
+
+std::vector<bool> Table::getIndex(const string &inTableName) {
+    auto tableFind = index.find(inTableName);
+    if(tableFind == index.end()) throw string("Table " + inTableName + " doesn't exist!");
+    vector<bool> result;
+    tableInfo[tableFind->second].getIndex(result);
+    return result;
+}
+
+std::vector<std::string> Table::getIndexName(const string &inTableName) {
+    auto tableFind = index.find(inTableName);
+    if(tableFind == index.end()) throw string("Table " + inTableName + " doesn't exist!");
+    vector<string> result;
+    tableInfo[tableFind->second].getIndexName(result);
+    return result;
+}
+
+int Table::setIndex(const string& inTableName, const string& columnName, const string& indexName) {
+    auto tableFind = index.find(inTableName);
+    if(tableFind == index.end()) throw string("Table " + inTableName + " doesn't exist!");
+    vector<string> Column;
+    vector<bool> Index;
+    vector<bool> Unique;
+    tableInfo[tableFind->second].getUnique(Unique);
+    tableInfo[tableFind->second].getIndex(Index);
+    tableInfo[tableFind->second].getColumn(Column);
+    int i = 0;
+    for(; i < Column.size(); ++i){
+        if(Column[i] == columnName){
+            if(!Unique[i]) throw string("Value " + columnName + " isn't unique!");
+            else if(Index[i]) throw string("Index already exists!");
+            else break;
+        }
+    }
+    if(i == Column.size()) throw string("Column doesn't exists!");
+    tableInfo[tableFind->second].index[i] = true;
+    tableInfo[tableFind->second].indexName[i] = indexName;
+    return i;
+}
+
+int Table::deleteIndex(const string &inTableName, const string &indexName) {
+    auto tableFind = index.find(inTableName);
+    if(tableFind == index.end()) throw string("Table " + inTableName + " doesn't exist!");
+    vector<string> IndexName;
+    tableInfo[tableFind->second].getIndexName(IndexName);
+    int i = 0;
+    for(; i < IndexName.size(); ++i){
+        if(IndexName[i] == indexName){
+            if(!tableInfo[tableFind->second].index[i]){
+                throw string("Index doesn't exist!");
+            }
+            else {
+                tableInfo[tableFind->second].index[i] = false;
+                break;
+            }
+        }
+    }
+    if(i == IndexName.size()) throw string("Index doesn't exist!");
+    else return i;
+}
+
+short Table::getPrimary(const string & inTableName) {
+    auto tableFind = index.find(inTableName);
+    if(tableFind == index.end()) throw string("Table " + inTableName + " doesn't exist!");
+    return tableInfo[tableFind->second].primary;
+}
+
