@@ -1,6 +1,4 @@
-//
-// Created by 陶辰宁 on 2021/6/2.
-//
+
 
 #ifndef MINISQL_INDEXMANAGER_H
 #define MINISQL_INDEXMANAGER_H
@@ -13,14 +11,15 @@ using namespace std;
 class IndexManager {
 public:
     IndexManager(BufferManager *inBM, Table *inTB);
-    void insertKey(string tableName, int column, string key);
-    bool findKey(string tableName, int column, string key);
-    void createIndex(string tableName, int column, short type);
-    void dropIndex(string tableName, int column);
+    void insertKey(const string& tableName, int column, string key);
+    bool findKey(const string& tableName, int column, string key);
+    void deleteKey(const string& tableName, int column, string key);
+    void deleteAll(const string& tableName, int column);
+    void createIndex(const string& tableName, int column, short type);
+    void dropIndex(const string& tableName, int column);
     ~IndexManager();
 private:
-    unordered_map<string, indexNode> index;
-
+    unordered_map<string, BpNode> index;
     BufferManager *BM;
     Table *TB;
 };

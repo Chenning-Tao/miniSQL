@@ -1,6 +1,3 @@
-//
-// Created by 陶辰宁 on 2021/5/19.
-//
 
 #include "BufferManager.h"
 #include <utility>
@@ -141,7 +138,6 @@ bool Page::pageWrite() {
         // 如果无法写入
         if(f == nullptr){
             f = fopen(filePath.c_str(), "wb+");
-            std::cout << "Create " << name << " in " << filePath << std::endl;
         }
         fseek(f, blockID * PAGE_SIZE, SEEK_SET);
         fwrite(content, PAGE_SIZE, 1, f);

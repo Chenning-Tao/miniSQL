@@ -8,6 +8,7 @@
 #include "../CommonHead.h"
 #include "BufferManager.h"
 #include "CatalogManager.h"
+#include "IndexManager.h"
 using namespace std;
 /*
  * 需要两个文件用来存储内容
@@ -21,6 +22,7 @@ using namespace std;
 class RecordManager {
 private:
     BufferManager *BM;
+    IndexManager *IM;
     void initialHead(const string& tableName, vector<int> &pageRecord, int &recordSize, int &recordPerPage);
     inline bool condition(const conditionPair& CD, const string& value){
         if(CD.type > 0){
@@ -58,9 +60,9 @@ private:
         }
     };
 public:
-    RecordManager(BufferManager *inBM);
+    RecordManager(BufferManager *inBM, IndexManager *inIM);
     void insert(const string& tableName, const vector<short> &type, vector<string>& content, const vector<bool>& unique);
-    void Delete(const string& tableName, const vector<short> &type, const vector<conditionPair> &CD);
+    int Delete(const string& tableName, const vector<short> &type, const vector<conditionPair> &CD, const vector<int> &indexColumn);
     void createTable(const string& tableName, Attribute tableInfo);
     void dropTable(const string& tableName);
     int select(const string& tableName, const vector<short>& type, tabulate::Table &output, const vector<conditionPair> &CD);

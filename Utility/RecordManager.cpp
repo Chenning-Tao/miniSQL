@@ -117,8 +117,9 @@ void RecordManager::insert(const string& tableName, const vector<short> &type, v
     BM->changeComplete(tableName, insertPage);
 }
 
-RecordManager::RecordManager(BufferManager *inBM){
+RecordManager::RecordManager(BufferManager *inBM, IndexManager *inIM){
     BM = inBM;
+    IM = inIM;
 }
 
 void RecordManager::initialHead(const string& tableName, vector<int> &pageRecord, int &recordSize, int &recordPerPage) {
@@ -279,12 +280,16 @@ void RecordManager::print(int count) {
     printf("\n");
 }
 
-void RecordManager::Delete(const string &tableName, const vector<short> &type, const vector<conditionPair> &CD) {
+int RecordManager::Delete(const string &tableName, const vector<short> &type,
+                          const vector<conditionPair> &CD, const vector<int> &indexColumn) {
     vector<int> pageRecord;
     int recordSize, recordPerPage;
     initialHead(tableName, pageRecord, recordSize, recordPerPage);
 
     if(CD.empty()){
+        for(int cur : indexColumn){
+            IM->deleteAll(tableName, cur);
+        }
         string fileName = tableName + "_INFO";
         BM->deleteFile(fileName);
         BM->deleteFile(tableName);
@@ -354,6 +359,9 @@ void RecordManager::Delete(const string &tableName, const vector<short> &type, c
                     }
                     if(flag){
                         // 清空记录
+                        for(int j : indexColumn){
+                            IM->deleteKey(tableName, j, tempResult[j]);
+                        }
                         point -= recordSize;
                         // 计算偏移
                         otherToChar(freePointer, point);

@@ -1,17 +1,14 @@
-//
-// Created by 陶辰宁 on 2021/6/2.
-//
 
 #include "IndexManager.h"
 
-void IndexManager::insertKey(string tableName, int column, string key) {
+void IndexManager::insertKey(const string& tableName, int column, string key) {
     auto indexFind = index.find(tableName + to_string(column));
     if(indexFind != index.end()){
         indexFind->second.key.insert(key);
     }
 }
 
-bool IndexManager::findKey(string tableName, int column, string key) {
+bool IndexManager::findKey(const string& tableName, int column, string key) {
     auto indexFind = index.find(tableName + to_string(column));
     if(indexFind == index.end()){
         throw string("Index doesn't exist!");
@@ -76,10 +73,10 @@ IndexManager::IndexManager(BufferManager *inBM, Table *inTB) {
     }
 }
 
-void IndexManager::createIndex(string tableName, int column, short type) {
+void IndexManager::createIndex(const string& tableName, int column, short type) {
     auto indexFind = index.find(tableName + to_string(column));
     if(indexFind == index.end()) {
-        indexNode newNode;
+        BpNode newNode;
         newNode.type = type;
         index.emplace(tableName + to_string(column), newNode);
         BM->fetchPage(tableName + to_string(column) + "_idx", 0);
@@ -87,7 +84,7 @@ void IndexManager::createIndex(string tableName, int column, short type) {
     }
 }
 
-void IndexManager::dropIndex(string tableName, int column) {
+void IndexManager::dropIndex(const string& tableName, int column) {
     auto indexFind = index.find(tableName + to_string(column));
     if(indexFind != index.end()){
         index.erase(indexFind);
@@ -134,4 +131,18 @@ IndexManager::~IndexManager() {
         }
         BM->changeComplete(fileName, curPage);
     }
+}
+
+void IndexManager::deleteKey(const string& tableName, int column, string key) {
+    auto indexFind = index.find(tableName + to_string(column));
+    if(indexFind != index.end()){
+        indexFind->second.key.erase(key);
+    }
+}
+
+void IndexManager::deleteAll(const string &tableName, int column) {
+    auto indexFind = index.find(tableName + to_string(column));
+    short type = indexFind->second.type;
+    dropIndex(tableName, column);
+    createIndex(tableName, column, type);
 }

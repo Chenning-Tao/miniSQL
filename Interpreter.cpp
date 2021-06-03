@@ -244,7 +244,7 @@ bool Interpreter::execfile(const string &fileName) {
         return false;
     }
     clock_t start, end;
-    start = clock();
+    //start = clock();
     string SQL, line;
     while (!file.eof()) {
         getline(file, line);
@@ -255,8 +255,8 @@ bool Interpreter::execfile(const string &fileName) {
             SQL = "";
         }
     }
-    end = clock();
-    printf("Success in %.3fs.\n", double (end - start)/CLOCKS_PER_SEC);
+    //end = clock();
+    //printf("Success in %.3fs.\n", double (end - start)/CLOCKS_PER_SEC);
     file.close();
 }
 

@@ -10,7 +10,9 @@ bool API::createTable(const string& tableName, const Attribute& tableAttribute) 
         CM->createTable(tableName, tableAttribute);
         short primary = TB->getPrimary(tableName);
         vector<short> type = TB->getType(tableName);
+        vector<string> columnName = TB->getColumn(tableName);
         if(primary != -1) IM->createIndex(tableName, primary, type[primary]);
+        TB->setIndex(tableName, columnName[primary], "primary");
         printf("Success!\n");
     }
     catch (const char *error) {
@@ -27,8 +29,8 @@ API::API() {
     BM = new BufferManager;
     TB = new Table(BM);
     CM = new CatalogManager(BM, TB);
-    RM = new RecordManager(BM);
     IM = new IndexManager(BM, TB);
+    RM = new RecordManager(BM, IM);
 }
 
 API::~API() {
@@ -164,8 +166,18 @@ bool API::SelectDelete(const vector<string> &column, string tableName, vector<co
         printf("%d rows in the set!\n", total);
     }
     else if(mode == DELETE){
+        vector<bool> Index = TB->getIndex(tableName);
+        vector<int> indexColumn;
+
+        for(int i = 0; i < Index.size(); ++i){
+            if(Index[i]) {
+                //if(CD[0].OP == Equal) IM->deleteKey(tableName, i, CD[0].condition);
+                indexColumn.emplace_back(i);
+            }
+        }
+
+        RM->Delete(tableName, type, CD, indexColumn);
         end = clock();
-        RM->Delete(tableName, type, CD);
         printf("Success in %.3fs\n", (double)(end - start)/CLOCKS_PER_SEC);
     }
 
