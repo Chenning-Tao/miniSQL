@@ -1,19 +1,20 @@
 
 #include "IndexManager.h"
 
-void IndexManager::insertKey(const string& tableName, int column, string key) {
+void IndexManager::insertKey(const string& tableName, int column, string key, int pageNum) {
     auto indexFind = index.find(tableName + to_string(column));
     if(indexFind != index.end()){
-        indexFind->second.key.insert(key);
+        indexFind->second.key.emplace(key, pageNum);
     }
 }
 
-bool IndexManager::findKey(const string& tableName, int column, string key) {
+int IndexManager::findKey(const string& tableName, int column, string key) {
     auto indexFind = index.find(tableName + to_string(column));
     if(indexFind == index.end()){
         throw string("Index doesn't exist!");
     } else {
-        return (indexFind->second.key.find(key) != indexFind->second.key.end());
+        if(indexFind->second.key.find(key) == indexFind->second.key.end()) return -1;
+        else return indexFind->second.key.find(key)->second;
     }
 }
 
@@ -38,10 +39,11 @@ IndexManager::IndexManager(BufferManager *inBM, Table *inTB) {
                 createIndex(tableName, i, type);
 
                 int recordPerPage;
-                if(type <= 0) recordPerPage = PAGE_SIZE/4;
-                else recordPerPage = PAGE_SIZE/type;
+                if(type <= 0) recordPerPage = PAGE_SIZE/8;
+                else recordPerPage = PAGE_SIZE/(type+4);
                 int count = 0;
                 int curPage = 0;
+                int num;
 
                 for(int j = 0; j < totalNumber; ++j){
                     if(count == 0) {
@@ -54,17 +56,18 @@ IndexManager::IndexManager(BufferManager *inBM, Table *inTB) {
                     if(type == -1) {
                         int temp;
                         charToOther(point, temp);
-                        insertKey(tableName, i, to_string(temp));
+                        charToOther(point, num);
+                        insertKey(tableName, i, to_string(temp), num);
                     }
                     else if(type == 0){
                         float temp;
                         charToOther(point, temp);
-                        insertKey(tableName, i, to_string(temp));
+                        insertKey(tableName, i, to_string(temp), num);
                     }
                     else {
                         string temp;
                         charToOther(point, temp, type);
-                        insertKey(tableName, i, temp);
+                        insertKey(tableName, i, temp, num);
                     }
                     --count;
                 }
@@ -104,8 +107,8 @@ IndexManager::~IndexManager() {
         otherToChar(size, point);
 
         int recordPerPage;
-        if(type <= 0) recordPerPage = PAGE_SIZE/4;
-        else recordPerPage = PAGE_SIZE/type;
+        if(type <= 0) recordPerPage = PAGE_SIZE/8;
+        else recordPerPage = PAGE_SIZE/(type+4);
         int count = 0;
         int curPage = 0;
 
@@ -120,13 +123,18 @@ IndexManager::~IndexManager() {
                 point = start.content;
             }
             if(type == -1) {
-                otherToChar(stoi(value), point);
+                otherToChar(stoi(value.first), point);
+                otherToChar(value.second, point);
             }
             else if(type == 0){
-                otherToChar(stof(value), point);
+                otherToChar(stof(value.first), point);
+                otherToChar(value.second, point);
             }
-            else
-                otherToChar(value, point, type);
+            else {
+                string temp = value.first;
+                otherToChar(temp, point, type);
+                otherToChar(value.second, point);
+            }
             --count;
         }
         BM->changeComplete(fileName, curPage);

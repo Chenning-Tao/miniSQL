@@ -51,8 +51,8 @@ bool API::dropTable(const string& tableName) {
         CM->dropTable(tableName);
         printf("Success!\n");
     }
-    catch (string *error) {
-        printf("%s\n", error->data());
+    catch (string error) {
+        printf("%s\n", error.data());
         return false;
     }
     RM->dropTable(tableName);
@@ -75,12 +75,17 @@ bool API::insert(const string& tableName, const vector<short>& type, vector<stri
     try {
         for(int i = 0; i < Index.size(); ++i){
             if(Index[i]){
-                if(IM->findKey(tableName, i, content[i])) throw string("Duplicated key!");
-                else IM->insertKey(tableName, i, content[i]);
+                if(IM->findKey(tableName, i, content[i]) != -1) throw string("Duplicated key!");
                 Unique[i] = false;
             }
         }
-        RM->insert(tableName, trueType, content, Unique);
+        int pageNum = RM->insert(tableName, trueType, content, Unique);
+        for(int i = 0; i < Index.size(); ++i){
+            if(Index[i]){
+                IM->insertKey(tableName, i, content[i], pageNum);
+                break;
+            }
+        }
         end = clock();
         printf("Success in %.3fs\n", double(end-start)/CLOCKS_PER_SEC);
     }
@@ -168,15 +173,24 @@ bool API::SelectDelete(const vector<string> &column, string tableName, vector<co
     else if(mode == DELETE){
         vector<bool> Index = TB->getIndex(tableName);
         vector<int> indexColumn;
+        int CDCur = 0;
+        vector<int> page;
 
         for(int i = 0; i < Index.size(); ++i){
             if(Index[i]) {
-                //if(CD[0].OP == Equal) IM->deleteKey(tableName, i, CD[0].condition);
+                if(CDCur < CD.size()){
+                    if(CD[CDCur].order == i){
+                        if(CD[CDCur].OP == Equal){
+                            page.emplace_back(IM->findKey(tableName, i, CD[CDCur].condition));
+                        }
+                    }else ++CDCur;
+                }
                 indexColumn.emplace_back(i);
             }
         }
 
-        RM->Delete(tableName, type, CD, indexColumn);
+        if(page.empty()) RM->Delete(tableName, type, CD, indexColumn);
+        else RM->Delete(tableName, type, CD, indexColumn, page);
         end = clock();
         printf("Success in %.3fs\n", (double)(end - start)/CLOCKS_PER_SEC);
     }

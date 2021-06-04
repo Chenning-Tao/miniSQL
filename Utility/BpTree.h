@@ -40,7 +40,7 @@ private:
 
 class BpNode{
 public:
-    set<string> key;
+    map<string, int> key;
     short type;
 };
 

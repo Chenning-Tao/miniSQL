@@ -4,7 +4,8 @@
 
 #include "RecordManager.h"
 
-void RecordManager::insert(const string& tableName, const vector<short> &type, vector<string>& content, const vector<bool>& unique) {
+int RecordManager::insert(const string& tableName, const vector<short> &type,
+                           vector<string>& content, const vector<bool>& unique) {
     string infoFile = tableName + "_INFO";
     vector<int> pageRecord;
     int recordSize, recordPerPage;
@@ -115,6 +116,7 @@ void RecordManager::insert(const string& tableName, const vector<short> &type, v
     point = insert.content;
     otherToChar(freePointerUpdate, point);
     BM->changeComplete(tableName, insertPage);
+    return insertPage;
 }
 
 RecordManager::RecordManager(BufferManager *inBM, IndexManager *inIM){
@@ -388,6 +390,91 @@ int RecordManager::Delete(const string &tableName, const vector<short> &type,
             }
             BM->changeComplete(tableName, i);
         }
+    }
+}
+
+int RecordManager::Delete(const string &tableName, const vector<short> &type, const vector<conditionPair> &CD,
+                          const vector<int> &indexColumn, const vector<int> &page) {
+    vector<int> pageRecord;
+    int recordSize, recordPerPage;
+    initialHead(tableName, pageRecord, recordSize, recordPerPage);
+
+    string infoFile = tableName + "_INFO";
+    pageInfo info;
+    pageInfo record;
+    int count;
+    for(int i : page){
+        count = pageRecord[i];
+        record = BM->fetchPage(tableName, i);
+        char *point = record.content;
+        int freePointer = 0;
+        int prevPointer;
+
+        int tempInt;
+        float tempFloat;
+        string tempString;
+
+        while(true){
+            if(freePointer == 0){
+                charToOther(point, freePointer);
+                prevPointer = freePointer;
+                point -= 4;
+                point += recordSize;
+            }
+            else{
+                --count;
+                --freePointer;
+                bool flag = true;
+                vector<string> tempResult;
+                for(short j : type){
+                    if(j == -1){
+                        charToOther(point, tempInt);
+                        tempResult.emplace_back(to_string(tempInt));
+                    }
+                    else if(j == 0){
+                        charToOther(point, tempFloat);
+                        tempResult.emplace_back(to_string(tempFloat));
+                    }
+                    else {
+                        charToOther(point, tempString, j);
+                        tempResult.emplace_back(tempString);
+                        tempString.clear();
+                    }
+                }
+                for(const auto & j : CD){
+                    flag = condition(j, tempResult[j.order]);
+                    if(!flag) break;
+                }
+                if(flag){
+                    // 清空记录
+                    for(int j : indexColumn){
+                        IM->deleteKey(tableName, j, tempResult[j]);
+                    }
+                    point -= recordSize;
+                    // 计算偏移
+                    otherToChar(freePointer, point);
+                    point -= 4;
+                    point -= (recordSize*(prevPointer - freePointer));
+                    otherToChar(prevPointer - freePointer - 1, point);
+                    point -= 4;
+                    point += (recordSize*(prevPointer - freePointer + 1));
+                    prevPointer = freePointer;
+                    // 更新数量
+                    int infoPage = i/(PAGE_SIZE/4) + 1;
+                    info = BM->fetchPage(infoFile, infoPage);
+                    int infoOffset = i - (infoPage-1)*(PAGE_SIZE/4);
+                    char *infoPoint = info.content;
+                    infoPoint += (4*infoOffset);
+                    int num;
+                    charToOther(infoPoint, num);
+                    infoPoint -= 4;
+                    otherToChar(int(num-1), infoPoint);
+                    BM->changeComplete(infoFile, infoPage);
+                }
+            }
+            if(count == 0) break;
+        }
+        BM->changeComplete(tableName, i);
     }
 }
 

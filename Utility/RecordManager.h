@@ -61,8 +61,11 @@ private:
     };
 public:
     RecordManager(BufferManager *inBM, IndexManager *inIM);
-    void insert(const string& tableName, const vector<short> &type, vector<string>& content, const vector<bool>& unique);
-    int Delete(const string& tableName, const vector<short> &type, const vector<conditionPair> &CD, const vector<int> &indexColumn);
+    int insert(const string& tableName, const vector<short> &type, vector<string>& content, const vector<bool>& unique);
+    int Delete(const string& tableName, const vector<short> &type,
+               const vector<conditionPair> &CD, const vector<int> &indexColumn);
+    int Delete(const string& tableName, const vector<short> &type,
+               const vector<conditionPair> &CD, const vector<int> &indexColumn, const vector<int> &page);
     void createTable(const string& tableName, Attribute tableInfo);
     void dropTable(const string& tableName);
     int select(const string& tableName, const vector<short>& type, tabulate::Table &output, const vector<conditionPair> &CD);
