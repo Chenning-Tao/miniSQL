@@ -68,7 +68,10 @@ public:
                const vector<conditionPair> &CD, const vector<int> &indexColumn, const vector<int> &page);
     void createTable(const string& tableName, Attribute tableInfo);
     void dropTable(const string& tableName);
-    int select(const string& tableName, const vector<short>& type, tabulate::Table &output, const vector<conditionPair> &CD);
+    int select(const string& tableName, const vector<short>& type, tabulate::Table &output,
+               const vector<conditionPair> &CD);
+    int select(const string& tableName, const vector<short>& type, tabulate::Table &output,
+               const vector<conditionPair> &CD, const vector<int> &page);
     void print(const vector<string> &result);
     static void print(int count);
     void printTitle(const vector<string> &column, const vector<short> &type, int &separation);

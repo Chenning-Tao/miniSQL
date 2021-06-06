@@ -244,6 +244,72 @@ int RecordManager::select(const string& tableName, const vector<short>& type,
     return resultCount;
 }
 
+int RecordManager::select(const string& tableName, const vector<short>& type,
+                          tabulate::Table &output, const vector<conditionPair>& CD,
+                          const vector<int>& page) {
+    vector<int> pageRecord;
+    int recordSize, recordPerPage;
+    initialHead(tableName, pageRecord, recordSize, recordPerPage);
+
+    pageInfo record;
+    int count;
+    int resultCount = 0;
+    for(int i : page){
+        count = pageRecord[i];
+        record = BM->fetchPage(tableName, i);
+        char *point = record.content;
+        int freePointer = 0;
+        int tempInt;
+        float tempFloat;
+        string tempString;
+
+        while(true){
+            if(freePointer == 0){
+                charToOther(point, freePointer);
+                point -= 4;
+                point += recordSize;
+            }
+            else{
+                --count;
+                --freePointer;
+                bool flag = true;
+                vector<string> tempResult;
+                for(short j : type){
+                    if(j == -1){
+                        charToOther(point, tempInt);
+                        tempResult.emplace_back(to_string(tempInt));
+                    }
+                    else if(j == 0){
+                        charToOther(point, tempFloat);
+                        tempResult.emplace_back(to_string(tempFloat));
+                    }
+                    else {
+                        charToOther(point, tempString, j);
+                        tempResult.emplace_back(tempString);
+                        tempString.clear();
+                    }
+                }
+                for(const auto & j : CD){
+                    flag = condition(j, tempResult[j.order]);
+                    if(!flag) break;
+                }
+
+                if(flag) {
+                    ++resultCount;
+                    addRowInit(output, type.size());
+                    for(int j = 0; j < tempResult.size(); ++j){
+                        output[resultCount][j].set_text(tempResult[j]);
+                    }
+                }
+//                print(tempResult);
+            }
+            if(count == 0) break;
+        }
+    }
+//    print(separation);
+    return resultCount;
+}
+
 void RecordManager::print(const vector<string> &result) {
     for(int j = 0; j < result.size(); ++j) {
         if (j + 1 == result.size())
