@@ -85,7 +85,14 @@ int BpTree::DeleteKey(const string& name, const conditionPair& CD, vector<Record
     int count = 0;
     if(leaf && blockNum < maxNum){
         while(count < blockNum){
-
+            RecordLocation tempLoc;
+            charToOther(point, tempLoc.page);
+            charToOther(point, tempLoc.offset);
+            string temp = getValue(point);
+            if(condition(CD, temp)){
+                point -= off;
+                memset(point, '\0', off);
+            }
         }
     }
     while(leaf && blockNum < maxNum){
