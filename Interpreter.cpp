@@ -5,7 +5,7 @@
 #include "Interpreter.h"
 #include <utility>
 
-int Interpreter::interpret(string SQL) {
+int Interpreter::interpret(const string& SQL) {
     regex Word("[a-z]+");
     smatch firstWord;
     if(regex_search(SQL, firstWord, Word)){
@@ -68,6 +68,7 @@ int Interpreter::interpret(string SQL) {
         }else
             printf("Syntax error!\n");
     } else printf("Syntax error!\n");
+    return 0;
 }
 
 int Interpreter::createTable(string SQL) {
@@ -140,6 +141,7 @@ bool Interpreter::dropTable(const string& SQL) {
         cout << "Syntax error near delete!" << endl;
         return false;
     }
+    return true;
 }
 
 bool Interpreter::insert(const string& tableName, string tableAttribute) {
@@ -172,6 +174,7 @@ bool Interpreter::insert(const string& tableName, string tableAttribute) {
         split = strtok(nullptr, ",");
     }
     api.insert(tableName, type, content);
+    return true;
 }
 
 bool Interpreter::SelectDelete(string column, string tableName, string condition, int mode) {
@@ -258,6 +261,7 @@ bool Interpreter::execfile(const string &fileName) {
     end = clock();
     printf("Success in %.3fs.\n", double (end - start)/CLOCKS_PER_SEC);
     file.close();
+    return true;
 }
 
 bool Interpreter::dropIndex(const string& SQL) {
@@ -268,6 +272,7 @@ bool Interpreter::dropIndex(const string& SQL) {
     }
     else{
         printf("Syntax error near drop index!\n");
-        return 0;
+        return false;
     }
+    return true;
 }

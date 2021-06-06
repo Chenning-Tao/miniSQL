@@ -21,7 +21,7 @@ private:
     bool execfile(const string &fileName);
 public:
     API api;
-    int interpret(string SQL);
+    int interpret(const string& SQL);
 };
 
 

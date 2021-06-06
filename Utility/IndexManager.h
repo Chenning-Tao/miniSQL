@@ -11,9 +11,9 @@ using namespace std;
 class IndexManager {
 public:
     IndexManager(BufferManager *inBM, Table *inTB);
-    void insertKey(const string& tableName, int column, string key, int pageNum);
-    int findKey(const string& tableName, int column, string key);
-    void deleteKey(const string& tableName, int column, string key);
+    void insertKey(const string& tableName, int column, const string& key, int pageNum);
+    int findKey(const string& tableName, int column, const string& key);
+    void deleteKey(const string& tableName, int column, const string& key);
     void deleteAll(const string& tableName, int column);
     void createIndex(const string& tableName, int column, short type);
     void dropIndex(const string& tableName, int column);

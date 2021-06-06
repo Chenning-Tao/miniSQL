@@ -1,17 +1,17 @@
 
 #include "IndexManager.h"
 
-void IndexManager::insertKey(const string& tableName, int column, string key, int pageNum) {
+void IndexManager::insertKey(const string& tableName, int column, const string& key, int pageNum) {
     auto indexFind = index.find(tableName + to_string(column));
     if(indexFind != index.end()){
         indexFind->second.key.emplace(key, pageNum);
     }
 }
 
-int IndexManager::findKey(const string& tableName, int column, string key) {
+int IndexManager::findKey(const string& tableName, int column, const string& key) {
     auto indexFind = index.find(tableName + to_string(column));
     if(indexFind == index.end()){
-        throw string("Index doesn't exist!");
+        throw runtime_error("Index doesn't exist!");
     } else {
         if(indexFind->second.key.find(key) == indexFind->second.key.end()) return -1;
         else return indexFind->second.key.find(key)->second;
@@ -21,7 +21,7 @@ int IndexManager::findKey(const string& tableName, int column, string key) {
 IndexManager::IndexManager(BufferManager *inBM, Table *inTB) {
     BM = inBM;
     TB = inTB;
-    for(auto Table : TB->index){
+    for(const auto& Table : TB->index){
         string tableName = Table.first;
         vector<bool> tableIndexColumn;
         TB->tableInfo[Table.second].getIndex(tableIndexColumn);
@@ -97,7 +97,7 @@ void IndexManager::dropIndex(const string& tableName, int column) {
 }
 
 IndexManager::~IndexManager() {
-    for(auto indexFind : index){
+    for(const auto& indexFind : index){
         short type = indexFind.second.type;
         string fileName = indexFind.first + "_idx";
         pageInfo start = BM->fetchPage(fileName, 0);
@@ -114,7 +114,7 @@ IndexManager::~IndexManager() {
 
         BM->changeComplete(fileName, 0);
 
-        for(auto value : indexFind.second.key){
+        for(const auto& value : indexFind.second.key){
             if(count == 0) {
                 count = recordPerPage;
                 BM->changeComplete(fileName, curPage);
@@ -141,7 +141,7 @@ IndexManager::~IndexManager() {
     }
 }
 
-void IndexManager::deleteKey(const string& tableName, int column, string key) {
+void IndexManager::deleteKey(const string& tableName, int column, const string& key) {
     auto indexFind = index.find(tableName + to_string(column));
     if(indexFind != index.end()){
         indexFind->second.key.erase(key);

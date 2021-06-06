@@ -15,8 +15,8 @@ bool API::createTable(const string& tableName, const Attribute& tableAttribute) 
         TB->setIndex(tableName, columnName[primary], "primary");
         printf("Success!\n");
     }
-    catch (const char *error) {
-        cout << error << endl;
+    catch (runtime_error &error) {
+        printf("%s\n", error.what());
         return false;
     }
     RM->createTable(tableName, tableAttribute);
@@ -51,8 +51,8 @@ bool API::dropTable(const string& tableName) {
         CM->dropTable(tableName);
         printf("Success!\n");
     }
-    catch (string error) {
-        printf("%s\n", error.data());
+    catch (runtime_error &error){
+        printf("%s\n", error.what());
         return false;
     }
     RM->dropTable(tableName);
@@ -65,8 +65,8 @@ bool API::insert(const string& tableName, const vector<short>& type, vector<stri
         start = clock();
         TB->checkTable(tableName, type);
     }
-    catch (string error) {
-        printf("%s\n", error.data());
+    catch (runtime_error &error){
+        printf("%s\n", error.what());
         return false;
     }
     vector<short> trueType = TB->getType(tableName);
@@ -75,7 +75,7 @@ bool API::insert(const string& tableName, const vector<short>& type, vector<stri
     try {
         for(int i = 0; i < Index.size(); ++i){
             if(Index[i]){
-                if(IM->findKey(tableName, i, content[i]) != -1) throw string("Duplicated key!");
+                if(IM->findKey(tableName, i, content[i]) != -1) throw runtime_error("Duplicated key!");
                 Unique[i] = false;
             }
         }
@@ -89,8 +89,8 @@ bool API::insert(const string& tableName, const vector<short>& type, vector<stri
         end = clock();
         printf("Success in %.3fs\n", double(end-start)/CLOCKS_PER_SEC);
     }
-    catch (string error) {
-        printf("%s\n", error.data());
+    catch (runtime_error &error){
+        printf("%s\n", error.what());
         return false;
     }
 
@@ -109,8 +109,9 @@ bool API::SelectDelete(const vector<string> &column, string tableName, vector<co
     }
     if(column[0] != "*") {
         try {TB->checkColumn(column, tableName);}
-        catch (string error) {
-            printf("%s\n", error.data());
+        catch (runtime_error &error){
+            printf("%s\n", error.what());
+            return false;
         }
     }
 //    int separation;
@@ -183,6 +184,11 @@ bool API::SelectDelete(const vector<string> &column, string tableName, vector<co
                         if(CD[CDCur].OP == Equal){
                             page.emplace_back(IM->findKey(tableName, i, CD[CDCur].condition));
                         }
+//                        else if(CD[CDCur].OP == GreaterEqual){
+//                            if((CDCur+1) < CD.size()){
+//
+//                            }
+//                        }
                     }else ++CDCur;
                 }
                 indexColumn.emplace_back(i);
@@ -205,10 +211,11 @@ bool API::createIndex(const string& indexName, const string& tableName, const st
         vector<short> Type = TB->getType(tableName);
         IM->createIndex(tableName, i, Type[i]);
     }
-    catch (string error){
-        printf("%s\n", error.data());
+    catch (runtime_error &error){
+        printf("%s\n", error.what());
+        return false;
     }
-
+    return true;
 }
 
 bool API::dropIndex(const string &indexName, const string& tableName) {
@@ -218,8 +225,9 @@ bool API::dropIndex(const string &indexName, const string& tableName) {
         IM->dropIndex(tableName, i);
         printf("Success!\n");
     }
-    catch (string error){
-        printf("%s\n", error.data());
+    catch (runtime_error &error){
+        printf("%s\n", error.what());
+        return false;
     }
-    return false;
+    return true;
 }

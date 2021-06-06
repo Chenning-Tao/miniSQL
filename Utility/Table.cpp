@@ -88,10 +88,10 @@ void Attribute::writeOut(char *&content) {
 }
 
 void Attribute::checkInfo(std::vector<short> inType) {
-    if (inType.size() != count + 1) throw string("Size doesn't match!");
+    if (inType.size() != count + 1) throw std::runtime_error("Size doesn't match!");
     for(int i = 0; i < inType.size(); ++i){
         if(inType[i] == -1 && type[i] == 0) continue;
-        if(inType[i] != type[i]) throw string("Column " + to_string(i+1) + " doesn't match!");
+        if(inType[i] != type[i]) throw std::runtime_error("Column " + to_string(i+1) + " doesn't match!");
     }
 }
 
@@ -101,7 +101,7 @@ void Attribute::getType(vector<short> &inType) {
     }
 }
 
-void Attribute::checkColumn(std::vector<std::string> Column) {
+void Attribute::checkColumn(const std::vector<std::string>& Column) {
     // todo: 完成
     bool flag = false;
     for(auto &i : Column){
@@ -109,7 +109,6 @@ void Attribute::checkColumn(std::vector<std::string> Column) {
         for(int j = 0; j <= count; ++j){
             if(name[j] == i){
                 flag = true;
-
             }
         }
     }
@@ -184,29 +183,29 @@ void Table::deleteTable(const std::string& deleteTableName) {
 
 void Table::checkTable(const std::string& inTableName, std::vector<short> type) {
     auto tableFind = index.find(inTableName);
-    if(tableFind == index.end()) throw string("Table " + inTableName + " doesn't exist!");
+    if(tableFind == index.end()) throw std::runtime_error("Table " + inTableName + " doesn't exist!");
     try{
         tableInfo[tableFind->second].checkInfo(std::move(type));
     }
-    catch (string error) {
+    catch (std::runtime_error &error) {
         throw error;
     }
 }
 
 void Table::checkColumn(const vector<std::string> &column, string &inTableName) {
     auto tableFind = index.find(inTableName);
-    if(tableFind == index.end()) throw string("Table " + inTableName + " doesn't exist!");
+    if(tableFind == index.end()) throw std::runtime_error("Table " + inTableName + " doesn't exist!");
     try{
         tableInfo[tableFind->second].checkColumn(column);
     }
-    catch (string error){
+    catch (std::runtime_error &error){
         throw error;
     }
 }
 
 vector<short> Table::getType(const string &inTableName) {
     auto tableFind = index.find(inTableName);
-    if(tableFind == index.end()) throw string("Table " + inTableName + " doesn't exist!");
+    if(tableFind == index.end()) throw std::runtime_error("Table " + inTableName + " doesn't exist!");
     vector<short> result;
     tableInfo[tableFind->second].getType(result);
     return result;
@@ -214,7 +213,7 @@ vector<short> Table::getType(const string &inTableName) {
 
 vector<string> Table::getColumn(const string &inTableName) {
     auto tableFind = index.find(inTableName);
-    if(tableFind == index.end()) throw string("Table " + inTableName + " doesn't exist!");
+    if(tableFind == index.end()) throw std::runtime_error("Table " + inTableName + " doesn't exist!");
     vector<string> result;
     tableInfo[tableFind->second].getColumn(result);
     return result;
@@ -222,7 +221,7 @@ vector<string> Table::getColumn(const string &inTableName) {
 
 std::vector<bool> Table::getUnique(const string &inTableName) {
     auto tableFind = index.find(inTableName);
-    if(tableFind == index.end()) throw string("Table " + inTableName + " doesn't exist!");
+    if(tableFind == index.end()) throw std::runtime_error("Table " + inTableName + " doesn't exist!");
     vector<bool> result;
     tableInfo[tableFind->second].getUnique(result);
     return result;
@@ -230,7 +229,7 @@ std::vector<bool> Table::getUnique(const string &inTableName) {
 
 std::vector<bool> Table::getIndex(const string &inTableName) {
     auto tableFind = index.find(inTableName);
-    if(tableFind == index.end()) throw string("Table " + inTableName + " doesn't exist!");
+    if(tableFind == index.end()) throw std::runtime_error("Table " + inTableName + " doesn't exist!");
     vector<bool> result;
     tableInfo[tableFind->second].getIndex(result);
     return result;
@@ -238,7 +237,7 @@ std::vector<bool> Table::getIndex(const string &inTableName) {
 
 std::vector<std::string> Table::getIndexName(const string &inTableName) {
     auto tableFind = index.find(inTableName);
-    if(tableFind == index.end()) throw string("Table " + inTableName + " doesn't exist!");
+    if(tableFind == index.end()) throw std::runtime_error("Table " + inTableName + " doesn't exist!");
     vector<string> result;
     tableInfo[tableFind->second].getIndexName(result);
     return result;
@@ -246,7 +245,7 @@ std::vector<std::string> Table::getIndexName(const string &inTableName) {
 
 int Table::setIndex(const string& inTableName, const string& columnName, const string& indexName) {
     auto tableFind = index.find(inTableName);
-    if(tableFind == index.end()) throw string("Table " + inTableName + " doesn't exist!");
+    if(tableFind == index.end()) throw std::runtime_error("Table " + inTableName + " doesn't exist!");
     vector<string> Column;
     vector<bool> Index;
     vector<bool> Unique;
@@ -256,12 +255,12 @@ int Table::setIndex(const string& inTableName, const string& columnName, const s
     int i = 0;
     for(; i < Column.size(); ++i){
         if(Column[i] == columnName){
-            if(!Unique[i]) throw string("Value " + columnName + " isn't unique!");
-            else if(Index[i]) throw string("Index already exists!");
+            if(!Unique[i]) throw std::runtime_error("Value " + columnName + " isn't unique!");
+            else if(Index[i]) throw std::runtime_error("Index already exists!");
             else break;
         }
     }
-    if(i == Column.size()) throw string("Column doesn't exists!");
+    if(i == Column.size()) throw std::runtime_error("Column doesn't exists!");
     tableInfo[tableFind->second].index[i] = true;
     tableInfo[tableFind->second].indexName[i] = indexName;
     return i;
@@ -269,14 +268,14 @@ int Table::setIndex(const string& inTableName, const string& columnName, const s
 
 int Table::deleteIndex(const string &inTableName, const string &indexName) {
     auto tableFind = index.find(inTableName);
-    if(tableFind == index.end()) throw string("Table " + inTableName + " doesn't exist!");
+    if(tableFind == index.end()) throw std::runtime_error("Table " + inTableName + " doesn't exist!");
     vector<string> IndexName;
     tableInfo[tableFind->second].getIndexName(IndexName);
     int i = 0;
     for(; i < IndexName.size(); ++i){
         if(IndexName[i] == indexName){
             if(!tableInfo[tableFind->second].index[i]){
-                throw string("Index doesn't exist!");
+                throw std::runtime_error("Index doesn't exist!");
             }
             else {
                 tableInfo[tableFind->second].index[i] = false;
@@ -284,13 +283,13 @@ int Table::deleteIndex(const string &inTableName, const string &indexName) {
             }
         }
     }
-    if(i == IndexName.size()) throw string("Index doesn't exist!");
+    if(i == IndexName.size()) throw std::runtime_error("Index doesn't exist!");
     else return i;
 }
 
 short Table::getPrimary(const string & inTableName) {
     auto tableFind = index.find(inTableName);
-    if(tableFind == index.end()) throw string("Table " + inTableName + " doesn't exist!");
+    if(tableFind == index.end()) throw std::runtime_error("Table " + inTableName + " doesn't exist!");
     return tableInfo[tableFind->second].primary;
 }
 

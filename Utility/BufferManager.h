@@ -13,7 +13,7 @@ class Page{
 public:
     Page();
     ~Page();
-    bool pageWrite();
+    void pageWrite();
     bool isDirty() const;
     bool isFree() const;
     void makeFree();
@@ -37,7 +37,7 @@ class BufferManager {
 public:
     BufferManager();
     ~BufferManager();
-    pageInfo fetchPage(std::string fileName, int blockID);
+    pageInfo fetchPage(const std::string& fileName, int blockID);
     int freePage();
     static int blockNum(const std::string& fileName);
     void changeComplete(const std::string& fileName, int blockID);

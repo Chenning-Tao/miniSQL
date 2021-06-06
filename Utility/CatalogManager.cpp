@@ -5,7 +5,7 @@
 #include "CatalogManager.h"
 
 void CatalogManager::createTable(string tableName, Attribute tableAttribute) {
-    if(TB->isExist(tableName) != -1) throw "Table already existed!";
+    if(TB->isExist(tableName) != -1) throw runtime_error("Table already existed!");
     // 添加到table到数据结构中
     int newBlockID = freePointer.front();
     // 首先获取一个空闲的page
@@ -114,9 +114,9 @@ CatalogManager::~CatalogManager() {
     delete TB;
 }
 
-void CatalogManager::dropTable(string tableName) {
+void CatalogManager::dropTable(const string& tableName) {
     int blockID = TB->isExist(tableName);
-    if(blockID == -1) throw "This table doesn't exists!";
+    if(blockID == -1) throw runtime_error("This table doesn't exists!");
     BM->deletePage("Catalog", blockID);
     TB->deleteTable(tableName);
     // 在已有list中删除

@@ -21,7 +21,7 @@ int BufferManager::blockNum(const std::string& fileName) {
     }
 }
 
-pageInfo BufferManager::fetchPage(std::string fileName, int blockID) {
+pageInfo BufferManager::fetchPage(const std::string& fileName, int blockID) {
     pageInfo newPage;
     // 首先查看bufferPool中是否存在
     std::string indexFind = fileName + std::to_string(blockID);
@@ -100,7 +100,7 @@ void BufferManager::flush() {
         bufferPool[cur].pageWrite();
     }
     std::vector<int>().swap(dirtyPage);
-    for(std::string cur : deleteList){
+    for(const std::string& cur : deleteList){
         int i = 0;
         std::string temp = cur + std::to_string(i);
         auto getID = index.find(temp);
@@ -131,7 +131,7 @@ Page::Page() {
     pin = false;
 }
 
-bool Page::pageWrite() {
+void Page::pageWrite() {
     if(dirty && !free){
         std::string filePath = DatabasePath + name;
         FILE* f = fopen(filePath.c_str(), "rb+");
@@ -143,7 +143,6 @@ bool Page::pageWrite() {
         fwrite(content, PAGE_SIZE, 1, f);
         fclose(f);
     }
-    else return true;
 }
 
 bool Page::isDirty() const {

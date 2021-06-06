@@ -48,13 +48,13 @@ int RecordManager::insert(const string& tableName, const vector<short> &type,
                     for (int j = 0; j < type.size(); ++j) {
                         if (type[j] == -1) {
                             charToOther(point, tempInt);
-                            if (unique[j]) if (to_string(tempInt) == content[j]) throw string("Duplited key!");
+                            if (unique[j]) if (to_string(tempInt) == content[j]) throw runtime_error("Duplited key!");
                         } else if (type[j] == 0) {
                             charToOther(point, tempFloat);
-                            if (unique[j]) if (to_string(tempFloat) == content[j]) throw string("Duplited key!");
+                            if (unique[j]) if (to_string(tempFloat) == content[j]) throw runtime_error("Duplited key!");
                         } else {
                             charToOther(point, tempString, type[j]);
-                            if (unique[j]) if (tempString == content[j]) throw string("Duplited key!");
+                            if (unique[j]) if (tempString == content[j]) throw runtime_error("Duplited key!");
                             tempString.clear();
                         }
                     }
@@ -316,9 +316,8 @@ int RecordManager::Delete(const string &tableName, const vector<short> &type,
         string infoFile = tableName + "_INFO";
         pageInfo info;
         pageInfo record;
-        int count;
         for(int i = 0; i < pageRecord.size(); ++i){
-            count = pageRecord[i];
+            int count = pageRecord[i];
             record = BM->fetchPage(tableName, i);
             char *point = record.content;
             int freePointer = 0;
@@ -391,6 +390,7 @@ int RecordManager::Delete(const string &tableName, const vector<short> &type,
             BM->changeComplete(tableName, i);
         }
     }
+    return 0;
 }
 
 int RecordManager::Delete(const string &tableName, const vector<short> &type, const vector<conditionPair> &CD,
@@ -476,5 +476,6 @@ int RecordManager::Delete(const string &tableName, const vector<short> &type, co
         }
         BM->changeComplete(tableName, i);
     }
+    return 0;
 }
 

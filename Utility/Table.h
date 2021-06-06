@@ -34,7 +34,7 @@ public:
     void getUnique(std::vector<bool> &Unique);
     void getIndex(std::vector<bool> &Index);
     void getIndexName(std::vector<std::string> &IndexName);
-    void checkColumn(std::vector<std::string> Column);
+    void checkColumn(const std::vector<std::string>& Column);
 };
 
 class Table {
