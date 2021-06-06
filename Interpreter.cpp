@@ -246,7 +246,9 @@ bool Interpreter::execfile(const string &fileName) {
         printf("File doesn't exist!\n");
         return false;
     }
-    clock_t start, end;
+//    double start_time, run_time;
+//    start_time = omp_get_wtime();
+    clock_t start,end;
     start = clock();
     string SQL, line;
     while (!file.eof()) {
@@ -258,8 +260,10 @@ bool Interpreter::execfile(const string &fileName) {
             SQL = "";
         }
     }
+//    run_time = omp_get_wtime() - start_time;
     end = clock();
-    printf("Success in %.3fs.\n", double (end - start)/CLOCKS_PER_SEC);
+    printf("Success in %.3fs.\n", double(end-start)/CLOCKS_PER_SEC);
+    //printf("Success in %.3fs.\n", run_time);
     file.close();
     return true;
 }

@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.19)
 project(miniSQL)
 
 set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -mllvm -polly -mllvm -polly-parallel -mllvm -polly-scheduling=dynamic -mllvm -polly-scheduling-chunksize=1")
 # 添加OpenMP的操作
 set(OPENMP_LIBRARIES "/usr/local/opt/libomp/lib") #这里写你的libomp路径, 通过brew安装的默认地址
 set(OPENMP_INCLUDES "/usr/local/opt/libomp/include")#这里写你的libomp路径

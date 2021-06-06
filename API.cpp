@@ -176,26 +176,40 @@ bool API::SelectDelete(const vector<string> &column, string tableName, vector<co
         vector<int> indexColumn;
         int CDCur = 0;
         vector<int> page;
+        bool findFlag = false;
 
         for(int i = 0; i < Index.size(); ++i){
             if(Index[i]) {
                 if(CDCur < CD.size()){
                     if(CD[CDCur].order == i){
                         if(CD[CDCur].OP == Equal){
-                            page.emplace_back(IM->findKey(tableName, i, CD[CDCur].condition));
+                            int temp = IM->findKey(tableName, i, CD[CDCur].condition);
+                            if(temp != -1) page.emplace_back(temp);
+                            findFlag = true;
                         }
-//                        else if(CD[CDCur].OP == GreaterEqual){
-//                            if((CDCur+1) < CD.size()){
-//
-//                            }
-//                        }
+                        else if(CDCur + 1 < CD.size()){
+                            if(CD[CDCur].order == CD[CDCur+1].order){
+                                if((CD[CDCur].OP == GreaterEqual || CD[CDCur].OP ==  Greater)
+                                    && (CD[CDCur+1].OP == LessEqual || CD[CDCur+1].OP == Less)){
+                                    IM->keyRange(tableName, i, CD[CDCur].condition, CD[CDCur+1].condition, page);
+                                    findFlag = true;
+                                    CDCur += 2;
+                                }
+                                else if((CD[CDCur+1].OP == GreaterEqual || CD[CDCur].OP ==  Greater)
+                                   && (CD[CDCur].OP == LessEqual || CD[CDCur+1].OP == Less)){
+                                    IM->keyRange(tableName, i, CD[CDCur+1].condition, CD[CDCur].condition, page);
+                                    findFlag = true;
+                                    CDCur += 2;
+                                }
+                            }
+                        }
                     }else ++CDCur;
                 }
                 indexColumn.emplace_back(i);
             }
         }
 
-        if(page.empty()) RM->Delete(tableName, type, CD, indexColumn);
+        if(!findFlag) RM->Delete(tableName, type, CD, indexColumn);
         else RM->Delete(tableName, type, CD, indexColumn, page);
         end = clock();
         printf("Success in %.3fs\n", (double)(end - start)/CLOCKS_PER_SEC);

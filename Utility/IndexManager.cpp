@@ -4,7 +4,11 @@
 void IndexManager::insertKey(const string& tableName, int column, const string& key, int pageNum) {
     auto indexFind = index.find(tableName + to_string(column));
     if(indexFind != index.end()){
-        indexFind->second.key.emplace(key, pageNum);
+        if(indexFind->second.type == -1){
+            indexFind->second.intKey.emplace(stoi(key), pageNum);
+        }else if(indexFind->second.type == 0){
+            indexFind->second.floatKey.emplace(stof(key), pageNum);
+        }else indexFind->second.stringKey.emplace(key, pageNum);
     }
 }
 
@@ -13,8 +17,17 @@ int IndexManager::findKey(const string& tableName, int column, const string& key
     if(indexFind == index.end()){
         throw runtime_error("Index doesn't exist!");
     } else {
-        if(indexFind->second.key.find(key) == indexFind->second.key.end()) return -1;
-        else return indexFind->second.key.find(key)->second;
+        if(indexFind->second.type == -1){
+            if(indexFind->second.intKey.find(stoi(key)) == indexFind->second.intKey.end()) return -1;
+            else return indexFind->second.intKey.find(stoi(key))->second;
+        }else if(indexFind->second.type == 0){
+            if(indexFind->second.floatKey.find(stof(key)) == indexFind->second.floatKey.end()) return -1;
+            else return indexFind->second.floatKey.find(stof(key))->second;
+        }else {
+            if(indexFind->second.stringKey.find(key) == indexFind->second.stringKey.end()) return -1;
+            else return indexFind->second.stringKey.find(key)->second;
+        }
+
     }
 }
 
@@ -103,7 +116,10 @@ IndexManager::~IndexManager() {
         pageInfo start = BM->fetchPage(fileName, 0);
         char *point = start.content;
         otherToChar(type, point);
-        int size = indexFind.second.key.size();
+        int size;
+        if(indexFind.second.type == -1) size = indexFind.second.intKey.size();
+        else if(indexFind.second.type == 0) size = indexFind.second.floatKey.size();
+        else size = indexFind.second.stringKey.size();
         otherToChar(size, point);
 
         int recordPerPage;
@@ -114,28 +130,48 @@ IndexManager::~IndexManager() {
 
         BM->changeComplete(fileName, 0);
 
-        for(const auto& value : indexFind.second.key){
-            if(count == 0) {
-                count = recordPerPage;
-                BM->changeComplete(fileName, curPage);
-                ++curPage;
-                start = BM->fetchPage(fileName, curPage);
-                point = start.content;
-            }
-            if(type == -1) {
-                otherToChar(stoi(value.first), point);
+        if(type == -1) {
+            for (const auto &value : indexFind.second.intKey) {
+                if (count == 0) {
+                    count = recordPerPage;
+                    BM->changeComplete(fileName, curPage);
+                    ++curPage;
+                    start = BM->fetchPage(fileName, curPage);
+                    point = start.content;
+                }
+                otherToChar(value.first, point);
                 otherToChar(value.second, point);
+                --count;
             }
-            else if(type == 0){
-                otherToChar(stof(value.first), point);
-                otherToChar(value.second, point);
+        }
+        else if(type == 0){
+            for (const auto &value : indexFind.second.floatKey) {
+                if (count == 0) {
+                    count = recordPerPage;
+                    BM->changeComplete(fileName, curPage);
+                    ++curPage;
+                    start = BM->fetchPage(fileName, curPage);
+                    point = start.content;
+                }
+                    otherToChar(value.first, point);
+                    otherToChar(value.second, point);
+                --count;
             }
-            else {
+        }
+        else {
+            for (const auto &value : indexFind.second.stringKey) {
+                if (count == 0) {
+                    count = recordPerPage;
+                    BM->changeComplete(fileName, curPage);
+                    ++curPage;
+                    start = BM->fetchPage(fileName, curPage);
+                    point = start.content;
+                }
                 string temp = value.first;
                 otherToChar(temp, point, type);
                 otherToChar(value.second, point);
+                --count;
             }
-            --count;
         }
         BM->changeComplete(fileName, curPage);
     }
@@ -144,7 +180,11 @@ IndexManager::~IndexManager() {
 void IndexManager::deleteKey(const string& tableName, int column, const string& key) {
     auto indexFind = index.find(tableName + to_string(column));
     if(indexFind != index.end()){
-        indexFind->second.key.erase(key);
+        if(indexFind->second.type == -1){
+            indexFind->second.intKey.erase(stoi(key));
+        }else if(indexFind->second.type == 0){
+            indexFind->second.floatKey.erase(stof(key));
+        }else indexFind->second.stringKey.erase(key);
     }
 }
 
@@ -153,4 +193,41 @@ void IndexManager::deleteAll(const string &tableName, int column) {
     short type = indexFind->second.type;
     dropIndex(tableName, column);
     createIndex(tableName, column, type);
+}
+
+void IndexManager::keyRange(const string &tableName, int column, const string& lowerBound, const string& upperBound, vector<int> &page) {
+    auto tableFind = index.find(tableName+to_string(column));
+    if(tableFind->second.type == -1){
+        auto LBound = tableFind->second.intKey.lower_bound(stoi(lowerBound));
+        auto UBound = tableFind->second.intKey.upper_bound(stoi(upperBound));
+        auto End = tableFind->second.intKey.end();
+        for(auto it = LBound; it != UBound && it != End; ++it){
+            auto result = find(page.begin(), page.end(), it->second);
+            if(result == page.end()){
+                page.emplace_back(it->second);
+            }
+        }
+    }else if(tableFind->second.type == 0){
+        auto LBound = tableFind->second.floatKey.lower_bound(stof(lowerBound));
+        auto UBound = tableFind->second.floatKey.upper_bound(stof(upperBound));
+        auto End = tableFind->second.floatKey.end();
+        for(auto it = LBound; it != UBound && it != End; ++it){
+            auto result = find(page.begin(), page.end(), it->second);
+            if(result == page.end()){
+                page.emplace_back(it->second);
+            }
+        }
+    }else {
+        auto LBound = tableFind->second.stringKey.lower_bound(lowerBound);
+        auto UBound = tableFind->second.stringKey.upper_bound(upperBound);
+        auto End = tableFind->second.stringKey.end();
+        for(auto it = LBound; it != UBound && it != End; ++it){
+            auto result = find(page.begin(), page.end(), it->second);
+            if(result == page.end()){
+                page.emplace_back(it->second);
+            }
+        }
+    }
+
+
 }

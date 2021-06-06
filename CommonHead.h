@@ -19,6 +19,7 @@
 #include <set>
 #include <unordered_set>
 #include <map>
+//#include <omp.h>
 #include "./Utility/tabulate.hpp"
 #define SELECT 1
 #define DELETE 2

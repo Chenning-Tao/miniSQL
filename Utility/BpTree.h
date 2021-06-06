@@ -123,7 +123,9 @@ private:
 
 class BpNode{
 public:
-    map<string, int> key;
+    map<string, int> stringKey;
+    map<float, int> floatKey;
+    map<int, int> intKey;
     short type;
 };
 

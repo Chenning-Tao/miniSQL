@@ -17,9 +17,10 @@ public:
     void deleteAll(const string& tableName, int column);
     void createIndex(const string& tableName, int column, short type);
     void dropIndex(const string& tableName, int column);
+    void keyRange(const string& tableName, int column, const string& lowerBound, const string& upperBound, vector<int>& page);
     ~IndexManager();
-private:
     unordered_map<string, BpNode> index;
+private:
     BufferManager *BM;
     Table *TB;
 };

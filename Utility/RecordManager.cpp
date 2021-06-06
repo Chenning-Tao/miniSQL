@@ -313,12 +313,14 @@ int RecordManager::Delete(const string &tableName, const vector<short> &type,
         BM->changeComplete(tableName, 0);
     }
     else {
+//        pageInfo record, info;
+//        int count;
+//        char *point;
         string infoFile = tableName + "_INFO";
-        pageInfo info;
-        pageInfo record;
+#pragma omp parallel for shared(pageRecord, tableName, recordSize, type, CD, indexColumn, infoFile) default(none)
         for(int i = 0; i < pageRecord.size(); ++i){
             int count = pageRecord[i];
-            record = BM->fetchPage(tableName, i);
+            pageInfo record = BM->fetchPage(tableName, i);
             char *point = record.content;
             int freePointer = 0;
             int prevPointer;
@@ -374,7 +376,7 @@ int RecordManager::Delete(const string &tableName, const vector<short> &type,
                         prevPointer = freePointer;
                         // 更新数量
                         int infoPage = i/(PAGE_SIZE/4) + 1;
-                        info = BM->fetchPage(infoFile, infoPage);
+                        pageInfo info = BM->fetchPage(infoFile, infoPage);
                         int infoOffset = i - (infoPage-1)*(PAGE_SIZE/4);
                         char *infoPoint = info.content;
                         infoPoint += (4*infoOffset);
